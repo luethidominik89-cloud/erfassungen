@@ -83,6 +83,7 @@ textarea{min-height:96px;resize:vertical}
 .dikinfo{background:#eef4fb;border:1px solid #d3e2f2;color:#1b4c7a;padding:9px 12px;border-radius:9px;
   font-size:12.5px;line-height:1.5;margin-bottom:9px}
 .mini{font-size:12px;color:var(--ink3);padding:0 2px 8px}
+.bkinfo{margin-top:7px;font-size:12.5px;color:#1f8a4c;background:#eef7f0;border-radius:6px;padding:6px 9px;word-break:break-all}
 .mini2{font-size:12.5px;line-height:1.5;color:#5b6470;background:#eef2f7;border-radius:7px;padding:8px 10px;margin:7px 0 0}
 .sug{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 10px}
 .sug button{border:1px dashed #cfd6de;background:#fbfcfd;color:var(--ink2);padding:8px 12px;border-radius:20px;
@@ -300,7 +301,7 @@ textarea{min-height:96px;resize:vertical}
     </div>
     <div class="sichw" data-w="fotos">
       <div class="k"><b>4 · Fotos einzeln teilen</b><span class="st" id="stFotos">offen</span></div>
-      <p>Schickt die Fotos als Bilddateien ins Teilen-Menü – falls die Datei aus Schritt 1 irgendwo hängen bleibt.</p>
+      <p>Schickt die Fotos als Bilddateien ins Teilen-Menü – falls die Datei aus Schritt 1 irgendwo hängen bleibt. Die Namen enthalten die Mangel-Nummer (<b>Mangel-03-Bild-2.jpg</b>), das PC-Tool ordnet sie darüber wieder dem richtigen Mangel zu.</p>
       <button class="btn w" id="sichFotos">Fotos teilen</button>
     </div>
     <div class="sichw" data-w="lesbar">
@@ -308,6 +309,12 @@ textarea{min-height:96px;resize:vertical}
       <p>Legt eine <b>HTML-Datei</b> im Download-Ordner ab, die alles enth&auml;lt &ndash; Texte <b>und</b> Fotos.
       Sie l&auml;sst sich auf dem Handy selbst &ouml;ffnen, ausdrucken und verschicken, auch wenn am PC gar nichts geht.</p>
       <button class="btn w" id="sichLesbar">Lesbare Datei erstellen</button>
+    </div>
+    <div class="sichw" data-w="roh" style="border-style:dashed">
+      <div class="k"><b>Zusatz &middot; Jedes Foto sofort ablegen</b><span class="st" id="stRoh">aus</span></div>
+      <p>Legt <b>jedes aufgenommene Foto</b> zus&auml;tzlich sofort im Ordner <b>Download</b> ab &ndash; noch bevor
+      der Mangel gespeichert ist. Sicherste Variante, aber es erscheint bei jedem Foto eine Download-Meldung.</p>
+      <button class="btn w" id="rohBtn">Einschalten</button>
     </div>
     <div class="sichok" id="sichOk" hidden>Mindestens zwei Wege erledigt – die Begehung ist doppelt gesichert.</div>
     <div style="height:10px"></div>
@@ -868,7 +875,11 @@ $("#edDel").onclick=function(){
 $("#edCancel").onclick=function(){dikStop();show("list")};
 $("#camBtn").onclick=function(){$("#cam").click()};
 $("#galBtn").onclick=function(){$("#gal").click()};
-$("#cam").onchange=function(e){addFotos(e.target.files);e.target.value=""};
+$("#cam").onchange=function(e){
+  var fs=Array.prototype.slice.call(e.target.files||[]);
+  if(rohAn())fs.forEach(function(f,i){rohAblegen(f,i+1)});
+  addFotos(e.target.files);e.target.value="";
+};
 $("#gal").onchange=function(e){addFotos(e.target.files);e.target.value=""};
 $$("#pkPrio button").forEach(function(b){b.onclick=function(){
   $$("#pkPrio button").forEach(function(o){o.classList.remove("on")});b.classList.add("on")}});
@@ -920,7 +931,9 @@ function nameOf(p){
 =================================================================== */
 var SICH=null;                       /* aktuell im Blatt bearbeitete Begehung */
 function bkGet(id){var o=LS.get("fh_backup")||{};return o[id]||{}}
-function bkSet(id,weg){var o=LS.get("fh_backup")||{};o[id]=o[id]||{};o[id][weg]=Date.now();
+function bkInfo(id,weg){var o=LS.get("fh_backupinfo")||{};return (o[id]||{})[weg]||""}
+function bkSet(id,weg,info){var o=LS.get("fh_backup")||{};o[id]=o[id]||{};o[id][weg]=Date.now();
+  if(info){var q=LS.get("fh_backupinfo")||{};q[id]=q[id]||{};q[id][weg]=info;LS.set("fh_backupinfo",q)}
   LS.set("fh_backup",o);if(SICH&&SICH.id===id)sichZeichnen();drawJobs();sichHinweis()}
 function bkAnzahl(id){var b=bkGet(id),n=0;["teilen","datei","mail","fotos","lesbar"].forEach(function(w){if(b[w])n++});return n}
 function bkLetzte(id){var b=bkGet(id),t=0;for(var k in b){if(b[k]>t)t=b[k]}return t}
@@ -941,12 +954,18 @@ function protokoll(p){
       "   Ort: "+[m.gebaeude,m.stockwerk,m.ort].filter(Boolean).join(" · "),
       "   Kategorie: "+(m.kategorie||"—"),
       "   Feststellung: "+(m.feststellung||"—"),
-      "   Fotos: "+((m.fotos||[]).length));
+      "   Fotos: "+((m.fotos||[]).length)+
+        ((m.fotos||[]).length?"  (Dateien: Mangel-"+("0"+(i+1)).slice(-2)+"-Bild-1 bis -"+(m.fotos||[]).length+")":""));
   });
   L.push("","────────────────────────────",
-    "Diese E-Mail enthält die Texte, nicht die Fotos. Die vollständige Datei",
-    "("+nameOf(p)+") liegt im Download-Ordner des Handys und wird über",
-    "«Teilen» in Google Drive abgelegt.");
+    "Diese E-Mail enthält die Texte. Fotos lassen sich an eine solche Mail",
+    "technisch nicht anhängen – sie kommen über «Sichern → Weg 4: Fotos teilen»",
+    "als einzelne Bilder. Die Dateinamen nennen den Mangel:",
+    "Mangel-03-Bild-2.jpg gehört zu Mangel Nr. 3 in dieser Liste.",
+    "Im PC-Tool ordnet «Einzelne Fotos zuordnen» sie automatisch wieder zu.",
+    "",
+    "Die vollständige Datei mit Texten UND Fotos ("+nameOf(p)+")",
+    "geht über Weg 1 «Teilen» direkt nach Drive oder als Mail-Anhang an Gmail.");
   return L.join("\n");
 }
 function dateiAblegen(p){
@@ -1066,10 +1085,17 @@ function sichZeichnen(){
     " Mängel · "+fotoZahl(p)+" Fotos<br>Bitte mindestens zwei Wege benutzen. Ein Rundgang lässt sich nicht wiederholen.";
   [["teilen","stTeilen"],["datei","stDatei"],["mail","stMail"],["fotos","stFotos"],["lesbar","stLesbar"]].forEach(function(w){
     var el=$("#"+w[1]),box=document.querySelector('.sichw[data-w="'+w[0]+'"]');
-    if(b[w[0]]){el.textContent="erledigt "+wZeit(b[w[0]]);box.classList.add("fertig")}
+    var frueher=box.querySelector(".bkinfo");if(frueher)frueher.remove();
+    if(b[w[0]]){
+      el.textContent="erledigt "+wZeit(b[w[0]]);box.classList.add("fertig");
+      var inf=bkInfo(SICH.id,w[0]);
+      if(inf){var d=document.createElement("div");d.className="bkinfo";
+        d.innerHTML="\u2713 "+esc(inf);box.appendChild(d)}
+    }
     else{el.textContent="offen";box.classList.remove("fertig")}
   });
   $("#sichOk").hidden=bkAnzahl(id)<2;
+  rohZeichnen();
 }
 function fotoZahl(p){var n=0;(p.maengel||[]).forEach(function(m){n+=(m.fotos||[]).length});return n}
 async function sichOeffnen(p,id){
@@ -1143,8 +1169,10 @@ function wegLesbar(p){
 }
 $("#sichLesbar").onclick=function(){
   if(!SICH)return;
-  var nm=wegLesbar(SICH.p);bkSet(SICH.id,"lesbar");
-  toast("Im Download-Ordner: "+nm);
+  var nm=wegLesbar(SICH.p);bkSet(SICH.id,"lesbar",nm);
+  toast("Abgelegt: "+nm);
+  setTimeout(function(){alert("Lesbare Datei abgelegt.\n\n"+nm+"\n\nIm Ordner Download. "+
+    "Antippen \u00f6ffnet sie im Browser \u2013 mit allen Texten und Fotos, auch ohne PC.");},400);
 };
 
 /* ---------- Begehung aus einer Datei zurückholen ---------- */
@@ -1178,11 +1206,49 @@ $("#jobFile").onchange=function(e){
   r.readAsText(f);e.target.value="";
 };
 
+/* ---------- Zusatz: jedes Foto sofort ablegen ---------- */
+function rohAn(){return LS.get("fh_rohfoto")===1}
+function rohZeichnen(){
+  var el=$("#stRoh"),b=$("#rohBtn");if(!el||!b)return;
+  if(rohAn()){el.textContent="ein";b.textContent="Ausschalten";
+    document.querySelector('.sichw[data-w="roh"]').classList.add("fertig")}
+  else{el.textContent="aus";b.textContent="Einschalten";
+    document.querySelector('.sichw[data-w="roh"]').classList.remove("fertig")}
+}
+$("#rohBtn").onclick=function(){
+  if(rohAn()){LS.set("fh_rohfoto",0);rohZeichnen();toast("Ausgeschaltet");return}
+  if(!confirm("Jedes aufgenommene Foto wird ab sofort zus\u00e4tzlich im Ordner Download abgelegt.\n\n"+
+              "Vorteil: die Bilder sind sofort gesichert, unabh\u00e4ngig von der App.\n"+
+              "Nachteil: bei jedem Foto erscheint eine Download-Meldung, und der Speicher f\u00fcllt sich "+
+              "schneller.\n\nEinschalten?"))return;
+  LS.set("fh_rohfoto",1);rohZeichnen();toast("Eingeschaltet");
+};
+function rohAblegen(file,nr){
+  try{
+    var kd=(P.meta.kundeName||"Begehung").replace(/[^A-Za-z0-9\u00e4\u00f6\u00fc\u00c4\u00d6\u00dc]+/g,"_");
+    var t=new Date(),z=("0"+t.getHours()).slice(-2)+("0"+t.getMinutes()).slice(-2)+("0"+t.getSeconds()).slice(-2);
+    var nm="Rohfoto_"+kd+"_"+(P.meta.begehung||today())+"_"+z+"-"+nr+".jpg";
+    var u=URL.createObjectURL(file),a=document.createElement("a");
+    a.href=u;a.setAttribute("download",nm);a.style.display="none";
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(u);a.remove()},900);
+  }catch(e){}
+}
+
 $("#sichClose").onclick=function(){$("#ovSich").hidden=true;SICH=null};
 $("#ovSich").onclick=function(e){if(e.target===$("#ovSich")){$("#ovSich").hidden=true;SICH=null}};
 $("#sichTeilen").onclick=function(){if(SICH)wegTeilen(SICH.p)};
-$("#sichDatei").onclick=function(){if(!SICH)return;var n=dateiAblegen(SICH.p);bkSet(SICH.id,"datei");
-  toast("Liegt im Download-Ordner: "+n)};
+$("#sichDatei").onclick=function(){
+  if(!SICH)return;
+  var n=dateiAblegen(SICH.p);
+  bkSet(SICH.id,"datei",n);
+  toast("Abgelegt: "+n);
+  setTimeout(function(){
+    alert("Datei abgelegt.\n\n"+n+"\n\nSie liegt im Ordner Download dieses Handys.\n\n"+
+          "Zum Pr\u00fcfen: App \u00abDateien\u00bb \u00f6ffnen \u2192 Download \u2192 nach dem Namen suchen.\n"+
+          "Von dort l\u00e4sst sie sich jederzeit nach Drive oder an eine Mail anh\u00e4ngen.");
+  },400);
+};
 $("#sichFotos").onclick=function(){if(SICH)wegFotos(SICH.p)};
 $("#sichMail").onclick=function(){if(SICH)wegMail(SICH.p)};
 $("#sichKopie").onclick=function(){
