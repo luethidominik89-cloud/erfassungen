@@ -83,6 +83,7 @@ textarea{min-height:96px;resize:vertical}
 .dikinfo{background:#eef4fb;border:1px solid #d3e2f2;color:#1b4c7a;padding:9px 12px;border-radius:9px;
   font-size:12.5px;line-height:1.5;margin-bottom:9px}
 .mini{font-size:12px;color:var(--ink3);padding:0 2px 8px}
+.mini2{font-size:12.5px;line-height:1.5;color:#5b6470;background:#eef2f7;border-radius:7px;padding:8px 10px;margin:7px 0 0}
 .sug{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 10px}
 .sug button{border:1px dashed #cfd6de;background:#fbfcfd;color:var(--ink2);padding:8px 12px;border-radius:20px;
   font:inherit;font-size:13.5px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -264,8 +265,8 @@ textarea{min-height:96px;resize:vertical}
         <button class="btn dgr" id="edDel" hidden>Löschen</button>
         <button class="btn" id="edCancel">Abbrechen</button>
       </div>
-      <button class="btn d w" id="edSaveNext" style="margin-top:9px">Speichern &amp; n&auml;chster Mangel hier</button>
-      <div class="hint" id="nextHint">Beh&auml;lt Geb&auml;ude, Stockwerk und Lage bei &ndash; f&uuml;r mehrere M&auml;ngel im selben Raum.</div>
+      <button class="btn d w" id="edSaveNext" style="margin-top:9px">Speichern &amp; n&auml;chsten Mangel erfassen</button>
+      <div class="hint" id="nextHint">Beh&auml;lt Geb&auml;ude und Stockwerk bei. Die genaue Lage bleibt leer &ndash; die zuletzt erfassten Lagen stehen darunter zum Antippen.</div>
     </div></div>
   </section>
 </main>
@@ -275,13 +276,14 @@ textarea{min-height:96px;resize:vertical}
   <div class="sb">
     <div class="sichinfo" id="sichInfo"></div>
     <div class="sichw" data-w="teilen">
-      <div class="k"><b>1 · Teilen (Drive, Gmail, WhatsApp)</b><span class="st" id="stTeilen">offen</span></div>
+      <div class="k"><b>1 · Teilen – Drive oder als Mail-Anhang</b><span class="st" id="stTeilen">offen</span></div>
       <p>Vollständige Datei mit allen Fotos. Im Teilen-Menü Google&nbsp;Drive oder Gmail wählen.</p>
       <button class="btn p w" id="sichTeilen">Datei teilen</button>
     </div>
     <div class="sichw" data-w="datei">
       <div class="k"><b>2 · Auf dem Handy ablegen</b><span class="st" id="stDatei">offen</span></div>
       <p>Legt die Datei im Ordner <b>Download</b> ab. Von dort lässt sie sich jederzeit anhängen – auch später ohne Empfang.</p>
+      <p class="mini2">Den Zielordner gibt Android vor – die App kann ihn nicht wählen. Wer selbst bestimmen will, wohin: in Chrome auf <b>⋮ → Einstellungen → Downloads</b> die Option <b>«Fragen, wo Dateien gespeichert werden sollen»</b> einschalten. Direkt nach <b>Google Drive</b> kommt die Datei über <b>Weg 1 – Teilen</b>.</p>
       <button class="btn w" id="sichDatei">Datei herunterladen</button>
     </div>
     <div class="sichw" data-w="mail">
@@ -855,7 +857,7 @@ function edSpeichern(weiter){
   if(edit){P.maengel[P.maengel.indexOf(edit)]=o}else{P.maengel.push(o)}
   if(t)typMerken(t);
   dikStop();save();flush().then(drawJobs);drawList();
-  if(weiter){vorOrt=ort;openEdit(null);toast("Gespeichert \u2013 n\u00e4chster Mangel hier")}
+  if(weiter){openEdit(null);toast("Gespeichert \u2013 n\u00e4chster Mangel")}
   else{show("list");toast("Gespeichert")}
   return true}
 $("#edSave").onclick=function(){edSpeichern(false)};
@@ -956,16 +958,40 @@ function dateiAblegen(p){
   return name;
 }
 async function wegTeilen(p){
-  var name=nameOf(p),blob=new Blob([JSON.stringify(p)],{type:"application/json"});
-  try{
-    var f=new File([blob],name,{type:"application/json"});
-    if(navigator.canShare&&navigator.canShare({files:[f]})){
-      await navigator.share({files:[f],title:name});
-      bkSet(p.id||AID,"teilen");toast("Geteilt – am PC importieren");return true}
-  }catch(e){ if(e&&e.name==="AbortError")return false;
-    toast("Teilen nicht möglich – bitte Weg 2 oder 3 verwenden"); }
-  dateiAblegen(p);bkSet(p.id||AID,"datei");
-  toast("Teilen ging nicht – Datei liegt im Download-Ordner");
+  var name=nameOf(p), json=JSON.stringify(p);
+  /* Chrome laesst nur bekannte Dateitypen ins Teilen-Menue. «.4hb» kennt es nicht,
+     deshalb der Reihe nach mit anderen Endungen versuchen. Der Inhalt bleibt gleich. */
+  var versuche=[
+    {n:name,                                t:"application/json"},
+    {n:name.replace(/\.4hb$/i,".json"),     t:"application/json"},
+    {n:name.replace(/\.4hb$/i,".txt"),      t:"text/plain"}
+  ];
+  if(navigator.share&&navigator.canShare){
+    for(var i=0;i<versuche.length;i++){
+      var f;
+      try{f=new File([json],versuche[i].n,{type:versuche[i].t})}catch(e){continue}
+      var geht=false;
+      try{geht=navigator.canShare({files:[f]})}catch(e){geht=false}
+      if(!geht)continue;
+      try{
+        await navigator.share({files:[f],title:versuche[i].n});
+        bkSet(p.id||AID,"teilen");toast("Geteilt \u2013 am PC \u00fcbernehmen");return true;
+      }catch(e){
+        if(e&&e.name==="AbortError"){toast("Teilen abgebrochen");return false}
+        break;
+      }
+    }
+  }
+  /* Kein Weg ueber das Teilen-Menue: Datei ablegen und deutlich sagen, was passiert ist */
+  var nm=dateiAblegen(p);bkSet(p.id||AID,"datei");
+  alert("Das Teilen-Men\u00fc steht auf diesem Ger\u00e4t f\u00fcr diese Datei nicht zur Verf\u00fcgung.\n\n"+
+        "Die Begehung wurde stattdessen im Ordner Download abgelegt:\n"+nm+"\n\n"+
+        "So kommt sie trotzdem in Google Drive:\n"+
+        "   1. App \u00abDateien\u00bb oder \u00abFiles\u00bb \u00f6ffnen\n"+
+        "   2. Ordner Download, Datei lange antippen\n"+
+        "   3. Teilen \u2192 Drive oder Gmail\n\n"+
+        "Bei Gmail h\u00e4ngt die Datei dann als Anhang an der Mail.\n\n"+
+        "Weg 2 gilt damit als erledigt.");
   return true;
 }
 async function wegFotos(p){
@@ -1195,7 +1221,6 @@ init();
 })();
 </script>
 <script>
-/* Offline-Bereitschaft: nach dem ersten Aufruf laeuft die App ohne Netz */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('./sw.js').catch(function () {});
