@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15181c">
+<title>4 Hands – Erfassung vor Ort (Handy)</title>
+<style>
+:root{--acc:#c8321e;--ink:#1a1d21;--ink2:#5b6470;--ink3:#8b95a1;--line:#e2e5ea;--bg:#f4f5f7}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font:16px/1.5 system-ui,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:#15181c;color:#fff;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;
+  display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10}
+header .mk{width:32px;height:32px;border-radius:8px;background:var(--acc);display:grid;place-items:center;
+  font-weight:800;font-size:12px;flex:0 0 32px;border:0;color:#fff;cursor:pointer}
+header .t{font-weight:700;font-size:15.5px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header .s{font-size:11.5px;color:#8e99a6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header .mid{min-width:0;flex:1}
+header .cnt{background:#2a3039;border-radius:20px;padding:3px 11px;font-size:13px;font-weight:700}
+main{padding:12px 12px 104px;max-width:760px;margin:0 auto}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.card h2{margin:0;padding:12px 14px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--ink2);border-bottom:1px solid #eef0f3;display:flex;align-items:center;gap:8px}
+.card .bd{padding:14px}
+label{display:block;margin-bottom:11px}
+label>span{display:block;font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:5px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d5dae1;border-radius:10px;font:inherit;background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(200,50,30,.12)}
+textarea{min-height:96px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);
+  background:#fff;padding:12px 16px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.btn.p{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.d{background:#15181c;border-color:#15181c;color:#fff}
+.btn.w{width:100%}
+.btn.sm{padding:8px 12px;font-size:14px;font-weight:500}
+.btn.dgr{color:#b3261e}
+.row{display:flex;gap:9px;flex-wrap:wrap}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pick{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.pick button{border:1px solid var(--line);background:#fff;padding:9px 13px;border-radius:20px;font:inherit;
+  font-size:14px;cursor:pointer}
+.pick button.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.pick button.add{border-style:dashed;color:var(--ink3)}
+.cam{display:block;width:100%;border:2px dashed #cfd6de;border-radius:12px;background:#fbfcfd;
+  padding:26px 14px;text-align:center;color:var(--ink2);font-weight:600;cursor:pointer}
+.cam .ic{font-size:34px;display:block;margin-bottom:6px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:10px}
+.th{position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--line);background:#eee}
+.th img{width:100%;height:88px;object-fit:cover;display:block}
+.th .x{position:absolute;right:4px;top:4px;background:rgba(0,0,0,.66);color:#fff;width:36px;height:36px;
+  border-radius:50%;display:grid;place-items:center;font-size:18px;border:0;line-height:1}
+.th .lg{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);color:#fff;font-size:10.5px;
+  padding:2px 5px;text-align:center}
+.item{display:flex;gap:11px;padding:12px 13px;border-bottom:1px solid #eef0f3;align-items:center}
+.item:last-child{border-bottom:0}
+.item .n{flex:0 0 32px;height:32px;border-radius:8px;background:#eef0f3;display:grid;place-items:center;
+  font-size:12.5px;font-weight:700;color:var(--ink2)}
+.item.on .n{background:var(--acc);color:#fff}
+.item .tt{font-weight:600;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .lo{font-size:12.5px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item img{width:46px;height:46px;object-fit:cover;border-radius:7px;flex:0 0 46px}
+.tag{padding:2px 9px;border-radius:5px;font-size:11px;font-weight:700;white-space:nowrap}
+.t-dringend{background:#fdecea;color:#b3261e}.t-mittel{background:#fff2e0;color:#a35c00}
+.t-leicht{background:#eaf6ee;color:#166b3c}
+.fab{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:9px;
+  max-width:736px;margin:0 auto;z-index:20}
+.fab .btn{flex:1;box-shadow:0 6px 20px rgba(0,0,0,.22);padding:15px}
+.empty{text-align:center;padding:40px 16px;color:var(--ink3)}
+.empty .big{font-size:38px;opacity:.45;display:block;margin-bottom:8px}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%) translateY(60px);background:#15181c;
+  color:#fff;padding:11px 18px;border-radius:9px;font-size:14px;z-index:60;opacity:0;transition:.25s;pointer-events:none}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.warn{background:#fff6e5;border:1px solid #f0d9a8;color:#7a5a12;padding:10px 13px;border-radius:10px;
+  font-size:13px;margin-bottom:12px}
+.hint{font-size:12.5px;color:var(--ink3);margin-top:6px}
+.dikrow{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.dikbtn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);
+  background:#fff;padding:13px 16px;border-radius:10px;font:inherit;font-weight:650;cursor:pointer}
+.dikbtn.rec{background:var(--acc);border-color:var(--acc);color:#fff;animation:puls 1.2s infinite}
+@keyframes puls{0%,100%{box-shadow:0 0 0 0 rgba(200,50,30,.45)}70%{box-shadow:0 0 0 12px rgba(200,50,30,0)}}
+.diklive{font-size:13px;color:var(--ink3);font-style:italic;min-height:19px;margin:-2px 0 8px}
+.dikinfo{background:#eef4fb;border:1px solid #d3e2f2;color:#1b4c7a;padding:9px 12px;border-radius:9px;
+  font-size:12.5px;line-height:1.5;margin-bottom:9px}
+.mini{font-size:12px;color:var(--ink3);padding:0 2px 8px}
+.sug{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 10px}
+.sug button{border:1px dashed #cfd6de;background:#fbfcfd;color:var(--ink2);padding:8px 12px;border-radius:20px;
+  font:inherit;font-size:13.5px;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sug button.go{border-style:solid;border-color:var(--acc);color:var(--acc);font-weight:650}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:flex;align-items:flex-end}
+.ov .sheet{background:#fff;width:100%;max-height:88vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom)}
+.ov .sh{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;gap:9px;align-items:center}
+.ov .sh b{font-size:15px;flex:1}
+.ov .sb{overflow:auto;padding:8px 10px 14px}
+.ov .grp{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);font-weight:700;
+  padding:11px 5px 5px}
+.ov .ti{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;
+  padding:12px 13px;font:inherit;font-size:15px;margin-bottom:6px;cursor:pointer}
+.ov .ti:active{background:#f4f5f7}
+/* Speicher-Wächter */
+#dataAlarm{display:flex;gap:10px;align-items:center;background:#b3261e;color:#fff;padding:10px 12px;font-size:13px}
+#dataAlarm .ic{font-size:20px}
+#dataAlarm b{display:block}
+#dataAlarm #alarmTxt{display:block;opacity:.93;font-size:12px}
+#dataAlarm .btn{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5);color:#fff;flex:0 0 auto}
+.sstatebar{display:flex;gap:9px;align-items:center;padding:6px 12px 0;font-size:11.5px;color:var(--ink3)}
+.sstate{font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid var(--line);background:#fff;color:var(--ink2)}
+.sstate.ok{background:#eef7f1;border-color:#c3e2ce;color:#1f6b41}
+.sstate.ok::before{content:"● ";color:#1f8a4c}
+.sstate.busy{background:#fff8ec;border-color:#f0d9a8;color:#8a5f10}
+.sstate.busy::before{content:"● ";color:#e0900a}
+.sstate.warn{background:#b3261e;border-color:#b3261e;color:#fff}
+.sstate.leer{display:none}
+/* Sicherungs-Zentrum */
+.sichinfo{background:#eef4fb;border:1px solid #d3e2f2;color:#1b4c7a;border-radius:10px;padding:10px 12px;
+  font-size:13px;margin:2px 2px 12px}
+.sichw{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0 2px 10px}
+.sichw.fertig{border-color:#c3e2ce;background:#f6fbf8}
+.sichw .k{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.sichw .k b{flex:1;font-size:14.5px}
+.sichw .st{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#eef0f3;color:var(--ink3)}
+.sichw.fertig .st{background:#e6f4ec;color:#1f8a4c}
+.sichw p{margin:0 0 9px;font-size:12.5px;color:var(--ink2);line-height:1.45}
+.sichok{background:#eef7f1;border:1px solid #c3e2ce;color:#166b3c;border-radius:10px;padding:10px 12px;
+  font-size:13px;font-weight:600;margin:0 2px}
+.item .bk{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;background:#eef0f3;color:var(--ink3);white-space:nowrap}
+.item .bk.ok{background:#e6f4ec;color:#1f8a4c}
+.item .bk.warn{background:#fdecea;color:#b3261e}
+[hidden]{display:none!important}
+</style>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="theme-color" content="#15181c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+</head>
+<body>
+<header>
+  <button class="mk" id="home" title="Übersicht">4H</button>
+  <div class="mid"><div class="t" id="htitle">Erfassung vor Ort</div><div class="s" id="hsub">4 Hands · Handy</div></div>
+  <div class="cnt" id="hcnt">0</div>
+</header>
+<div id="dataAlarm" hidden>
+  <span class="ic">⚠</span>
+  <div style="flex:1;min-width:0"><b>Nicht gesichert</b><span id="alarmTxt"></span></div>
+  <button class="btn sm" id="alarmSich">Jetzt sichern</button>
+</div>
+<div class="sstatebar"><span class="sstate leer" id="saveState"></span><span id="sichHint"></span></div>
+
+<main>
+  <div class="warn" id="noStore" hidden>Dieser Browser speichert hier nichts dauerhaft. Sichere jede Begehung sofort über «Senden».</div>
+
+  <!-- ---------- Übersicht Begehungen ---------- -->
+  <section id="vHome" hidden>
+    <div class="card">
+      <h2>Begehungen auf diesem Gerät</h2>
+      <div id="jobs"></div>
+    </div>
+    <div class="card">
+      <h2>Begehung aus einer Datei holen</h2>
+      <div class="bd">
+        <p style="margin:0 0 9px;font-size:13.5px;color:#5b6470">Eine gesicherte <b>.4hb</b>-Datei
+        wieder in die App laden &ndash; nach einem Ger&auml;tewechsel oder wenn hier nichts mehr steht.</p>
+        <input type="file" id="jobFile" accept=".4hb,.json" hidden>
+        <button class="btn w" id="jobImp">Datei ausw&auml;hlen</button>
+      </div>
+    </div>
+    <div class="mini" id="quota"></div>
+  </section>
+
+  <!-- ---------- Kundendaten ---------- -->
+  <section id="vMeta" hidden>
+    <div class="card"><h2>Kunde</h2><div class="bd">
+      <label><span>Firma / Kunde</span><input id="m_kunde" placeholder="Muster AG"></label>
+      <label><span>Ansprechperson</span><input id="m_kontakt" placeholder="Vorname Name"></label>
+      <div class="g2">
+        <label><span>Telefon</span><input id="m_tel" type="tel" placeholder="optional"></label>
+        <label><span>E-Mail</span><input id="m_mail" type="email" placeholder="optional"></label>
+      </div>
+      <label style="margin-bottom:0"><span>Adresse Kunde</span><input id="m_kadr" placeholder="Strasse Nr., PLZ Ort"></label>
+    </div></div>
+    <div class="card"><h2>Objekt</h2><div class="bd">
+      <label><span>Objektbezeichnung</span><input id="m_objekt" placeholder="Verwaltungsgebäude West"></label>
+      <label><span>Adresse Objekt</span><input id="m_adr" placeholder="Strasse Nr., PLZ Ort"></label>
+      <div class="g2">
+        <label><span>Nutzung</span><input id="m_nutz" placeholder="Büro / Gewerbe"></label>
+        <label><span>GVZ-Nr.</span><input id="m_gvz" placeholder="optional"></label>
+      </div>
+    </div></div>
+    <div class="card"><h2>Begehung</h2><div class="bd">
+      <div class="g2">
+        <label><span>Bericht-Nr.</span><input id="m_nr" placeholder="BS-2026-001"></label>
+        <label><span>Datum</span><input id="m_datum" type="date"></label>
+      </div>
+      <label><span>Erfasst von</span><input id="m_wer" placeholder="Name"></label>
+      <label><span>Teilnehmende</span><input id="m_teil" placeholder="optional"></label>
+      <label style="margin-bottom:0"><span>Anlass / Bemerkung</span><textarea id="m_anlass" maxlength="600" style="min-height:70px"></textarea></label>
+    </div></div>
+    <button class="btn p w" id="metaOk">Übernehmen</button>
+    <div style="height:14px"></div>
+  </section>
+
+  <!-- ---------- Mängel-Liste ---------- -->
+  <section id="vList" hidden>
+    <div class="card">
+      <h2>Begehung <button class="btn sm" id="edMeta" style="margin-left:auto">Kundendaten</button></h2>
+      <div class="bd" id="metaBox" style="font-size:14px"></div>
+    </div>
+    <div class="card">
+      <h2>Erfasste Mängel</h2>
+      <div id="list"></div>
+    </div>
+  </section>
+
+  <!-- ---------- Mangel bearbeiten ---------- -->
+  <section id="vEdit" hidden>
+    <div class="card"><h2 id="edTitle">Neuer Mangel</h2><div class="bd">
+      <label style="margin-bottom:6px"><span>Fotos</span></label>
+      <input type="file" id="cam" accept="image/*" capture="environment" multiple hidden>
+      <input type="file" id="gal" accept="image/*" multiple hidden>
+      <div class="cam" id="camBtn"><span class="ic">📷</span>Foto aufnehmen</div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn sm" id="galBtn">Aus Galerie</button>
+        <span class="hint" style="margin:0;align-self:center">Übersicht + Detail sind hilfreich</span>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+      <div style="height:16px"></div>
+      <label><span>Gebäude</span></label>
+      <div class="pick" id="pkGeb"></div>
+      <label><span>Stockwerk</span></label>
+      <div class="pick" id="pkSto"></div>
+      <label style="margin-bottom:5px"><span>Genaue Lage</span><input id="e_ort" placeholder="z.B. Korridor Ost, Achse C"></label>
+      <div class="sug" id="sugOrt"></div>
+      <label style="margin-bottom:5px"><span>Kurzbezeichnung</span><input id="e_titel" maxlength="80" placeholder="Brandabschottung unvollständig"></label>
+      <div class="sug" id="sugTyp"><button type="button" class="go" id="typBtn">&#9889; Aus Liste w&auml;hlen</button></div>
+      <label><span>Kategorie</span>
+        <select id="e_kat">
+          <option value="">– wählen –</option>
+          <option>Abschottung / Brandabschnitte</option><option>Flucht- und Rettungswege</option>
+          <option>Brandschutzabschlüsse / Türen</option><option>Löscheinrichtungen</option>
+          <option>Brandmeldeanlage</option><option>Sicherheits- und Notbeleuchtung</option>
+          <option>Kennzeichnung</option><option>Elektrische Anlagen</option>
+          <option>Lagerung / Brandlasten</option><option>Lüftung / Brandschutzklappen</option>
+          <option>Blitzschutz</option><option>Organisatorischer Brandschutz</option>
+          <option>Bauliche Massnahmen</option><option>Sonstiges</option>
+        </select></label>
+      <label style="margin-bottom:6px"><span>Feststellung <span style="font-weight:400">(kurz halten)</span></span></label>
+      <div class="dikrow">
+        <button type="button" class="dikbtn" id="dikBtn">🎤 Sprachnotiz aufnehmen</button>
+        <button type="button" class="btn sm" id="dikClear" title="Feld leeren">✕</button>
+      </div>
+      <div class="diklive" id="dikLive"></div>
+      <div class="dikinfo" id="dikInfo" hidden></div>
+      <label><textarea id="e_fest" maxlength="400" placeholder="Was ist das Problem?"></textarea></label>
+      <label><span>Priorität</span></label>
+      <div class="pick" id="pkPrio">
+        <button data-p="dringend">Dringend</button><button data-p="mittel" class="on">Mittel</button><button data-p="leicht">Leicht</button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn p" id="edSave" style="flex:1">Speichern</button>
+        <button class="btn dgr" id="edDel" hidden>Löschen</button>
+        <button class="btn" id="edCancel">Abbrechen</button>
+      </div>
+      <button class="btn d w" id="edSaveNext" style="margin-top:9px">Speichern &amp; n&auml;chster Mangel hier</button>
+      <div class="hint" id="nextHint">Beh&auml;lt Geb&auml;ude, Stockwerk und Lage bei &ndash; f&uuml;r mehrere M&auml;ngel im selben Raum.</div>
+    </div></div>
+  </section>
+</main>
+
+<div class="ov" id="ovSich" hidden><div class="sheet">
+  <div class="sh"><b>Begehung sichern</b><button class="btn sm" id="sichClose">Schliessen</button></div>
+  <div class="sb">
+    <div class="sichinfo" id="sichInfo"></div>
+    <div class="sichw" data-w="teilen">
+      <div class="k"><b>1 · Teilen (Drive, Gmail, WhatsApp)</b><span class="st" id="stTeilen">offen</span></div>
+      <p>Vollständige Datei mit allen Fotos. Im Teilen-Menü Google&nbsp;Drive oder Gmail wählen.</p>
+      <button class="btn p w" id="sichTeilen">Datei teilen</button>
+    </div>
+    <div class="sichw" data-w="datei">
+      <div class="k"><b>2 · Auf dem Handy ablegen</b><span class="st" id="stDatei">offen</span></div>
+      <p>Legt die Datei im Ordner <b>Download</b> ab. Von dort lässt sie sich jederzeit anhängen – auch später ohne Empfang.</p>
+      <button class="btn w" id="sichDatei">Datei herunterladen</button>
+    </div>
+    <div class="sichw" data-w="mail">
+      <div class="k"><b>3 · Texte per E-Mail</b><span class="st" id="stMail">offen</span></div>
+      <p>Öffnet eine E-Mail mit allen erfassten Texten (ohne Fotos). Kommt auch dann durch, wenn das Teilen scheitert.
+      Ist der Text zu lang für eine E-Mail, wird er zusätzlich als Textdatei im Ordner <b>Download</b> abgelegt –
+      dann bitte anhängen. Als erledigt gilt der Weg erst, wenn Sie die Rückfrage bestätigen.</p>
+      <label style="margin-bottom:8px"><span>E-Mail-Adresse für die Sicherung</span>
+        <input id="sichMailAdr" type="email" inputmode="email" placeholder="buero@4-hands.ch"></label>
+      <div class="row">
+        <button class="btn w" id="sichMail" style="flex:1">E-Mail öffnen</button>
+        <button class="btn" id="sichKopie">Text kopieren</button>
+      </div>
+    </div>
+    <div class="sichw" data-w="fotos">
+      <div class="k"><b>4 · Fotos einzeln teilen</b><span class="st" id="stFotos">offen</span></div>
+      <p>Schickt die Fotos als Bilddateien ins Teilen-Menü – falls die Datei aus Schritt 1 irgendwo hängen bleibt.</p>
+      <button class="btn w" id="sichFotos">Fotos teilen</button>
+    </div>
+    <div class="sichw" data-w="lesbar">
+      <div class="k"><b>5 &middot; Lesbare Datei (ohne PC-Tool)</b><span class="st" id="stLesbar">offen</span></div>
+      <p>Legt eine <b>HTML-Datei</b> im Download-Ordner ab, die alles enth&auml;lt &ndash; Texte <b>und</b> Fotos.
+      Sie l&auml;sst sich auf dem Handy selbst &ouml;ffnen, ausdrucken und verschicken, auch wenn am PC gar nichts geht.</p>
+      <button class="btn w" id="sichLesbar">Lesbare Datei erstellen</button>
+    </div>
+    <div class="sichok" id="sichOk" hidden>Mindestens zwei Wege erledigt – die Begehung ist doppelt gesichert.</div>
+    <div style="height:10px"></div>
+  </div>
+</div></div>
+
+<div class="ov" id="ovTyp" hidden><div class="sheet">
+  <div class="sh"><b>H&auml;ufige M&auml;ngel</b><button class="btn sm" id="typClose">Schliessen</button></div>
+  <div style="padding:10px 12px 0"><input id="typQ" placeholder="Suchen&hellip;" autocomplete="off"></div>
+  <div class="sb" id="typList"></div>
+</div></div>
+
+<div class="fab" id="fabHome" hidden>
+  <button class="btn p w" id="jobNew">+ Neue Begehung</button>
+</div>
+<div class="fab" id="fabList" hidden>
+  <button class="btn p" id="fabNew" style="flex:2">+ Mangel erfassen</button>
+  <button class="btn d" id="fabSend">Sichern</button>
+</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)},$$=function(s){return[].slice.call(document.querySelectorAll(s))};
+var esc=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+var uid=function(){return"m"+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4)};
+var today=function(){return new Date().toISOString().slice(0,10)};
+var de=function(s){var p=String(s||"").split("-");return p.length===3?p[2]+"."+p[1]+"."+p[0]:(s||"")};
+function toast(t){var e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast._t);
+  toast._t=setTimeout(function(){e.classList.remove("on")},2400)}
+var LS={get:function(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}},
+        set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}};
+
+/* ---------- Speicher (IndexedDB, verkraftet viele Fotos) ---------- */
+var RAM=false;                        /* true = Gerät hat keine Datenbank, alles nur im Arbeitsspeicher */
+var IDB=(function(){var dbp=null;
+  function open(){if(dbp)return dbp;
+    dbp=new Promise(function(res,rej){try{
+      var r=indexedDB.open("fourhands-mob",1);
+      r.onupgradeneeded=function(){if(!r.result.objectStoreNames.contains("kv"))r.result.createObjectStore("kv")};
+      r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)};
+    }catch(e){rej(e)}}).catch(function(){return null});
+    dbp=dbp.then(function(db){if(!db)RAM=true;return db});
+    return dbp}
+  return{
+    da:async function(){return !!(await open())},
+    read:async function(k){var db=await open();
+      /* Keine Datenbank vorhanden = nichts da, was überschrieben werden könnte.
+         Das ist kein Lesefehler – die Erfassung muss trotzdem laufen. */
+      if(!db)return{ok:true,v:null,ram:true};
+      return new Promise(function(r){var done=false;function fin(o){if(!done){done=true;r(o)}}
+        try{var t=db.transaction("kv"),q=t.objectStore("kv").get(k);
+          q.onsuccess=function(){fin({ok:true,v:q.result==null?null:q.result})};
+          q.onerror=function(){fin({ok:false,v:null})};
+          t.onabort=function(){fin({ok:false,v:null})};
+          t.onerror=function(){fin({ok:false,v:null})};
+        }catch(e){fin({ok:false,v:null})}})},
+    get:async function(k){var o=await this.read(k);return o.v},
+    set:async function(k,v){return this.setAll([[k,v]])},
+    setAll:async function(paare){var db=await open();if(!db)return false;
+      return new Promise(function(r){var done=false;function fin(o){if(!done){done=true;r(o)}}
+        try{var t=db.transaction("kv","readwrite"),st=t.objectStore("kv");
+          paare.forEach(function(p){st.put(p[1],p[0])});
+          t.oncomplete=function(){fin(true)};t.onerror=function(){fin(false)};t.onabort=function(){fin(false)};
+        }catch(e){fin(false)}})},
+    del:async function(k){var db=await open();if(!db)return false;
+      return new Promise(function(r){var done=false;function fin(o){if(!done){done=true;r(o)}}
+        try{var t=db.transaction("kv","readwrite");t.objectStore("kv").delete(k);
+          t.oncomplete=function(){fin(true)};t.onerror=function(){fin(false)};t.onabort=function(){fin(false)};
+        }catch(e){fin(false)}})},
+    keys:async function(){var db=await open();if(!db)return[];
+      return new Promise(function(r){var done=false;function fin(a){if(!done){done=true;r(a)}}
+        try{var t=db.transaction("kv"),q=t.objectStore("kv").getAllKeys();
+          q.onsuccess=function(){fin(Array.prototype.slice.call(q.result||[]))};
+          q.onerror=function(){fin([])};t.onabort=function(){fin([])};
+        }catch(e){fin([])}})}
+  }})();
+
+var DEF_GEB=["Hauptgebäude"], DEF_STO=["UG","EG","1. OG","2. OG","3. OG","DG"];
+function blank(){return{v:1,mobile:1,
+  meta:{kundeName:"",kundeKontakt:"",kundeAdresse:"",kundeMail:"",kundeTel:"",
+        objektName:"",objektAdresse:"",objektNutzung:"",objektGvz:"",
+        berichtNr:"",begehung:today(),datum:today(),ersteller:LS.get("fh_wer")||"",teilnehmer:"",anlass:""},
+  gebaeude:DEF_GEB.slice(),stockwerke:DEF_STO.slice(),maengel:[]}}
+
+var P=blank(), JOBS=[], AID=null, last={geb:"",sto:"EG"}, edit=null, fotos=[], sv=null;
+
+function jobMeta(id,p){return{id:id,kunde:p.meta.kundeName||"Ohne Kunde",objekt:p.meta.objektName||"",
+  nr:p.meta.berichtNr||"",datum:p.meta.begehung||"",n:p.maengel.length,upd:new Date().toISOString()}}
+var saveFail=false, leseFehler=false, flushing=null;
+/* ---------- Speicher-Wächter ---------- */
+var W={stand:"leer",letzteOk:0,fehler:0};
+function fpr(d){var f=0;(d.maengel||[]).forEach(function(m){f+=(m.fotos||[]).length});
+  return [(d.maengel||[]).length,f,(d.gebaeude||[]).length,(d.stockwerke||[]).length].join("|")}
+function magerkopie(d){return{v:1,notfall:1,gesichert:new Date().toISOString(),
+  meta:d.meta,gebaeude:d.gebaeude,stockwerke:d.stockwerke,
+  maengel:(d.maengel||[]).map(function(m){return{id:m.id,gebaeude:m.gebaeude,stockwerk:m.stockwerk,ort:m.ort,
+    titel:m.titel,kategorie:m.kategorie,feststellung:m.feststellung,prio:m.prio,fotoAnzahl:(m.fotos||[]).length}})}}
+function wZeit(t){if(!t)return"";var d=new Date(t);
+  return ("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)}
+function wSet(stand,txt){
+  W.stand=stand;var e=$("#saveState");
+  if(e){e.className="sstate "+stand;
+    e.textContent={ok:"gespeichert "+wZeit(W.letzteOk),busy:"speichert…",warn:"NICHT GESPEICHERT",leer:""}[stand]||"";
+    e.title=txt||""}
+  var al=$("#dataAlarm");
+  if(al){al.hidden=stand!=="warn";
+    if(stand==="warn")$("#alarmTxt").textContent=txt||
+      ("Die Erfassung liegt nur im Arbeitsspeicher."+(W.letzteOk?" Zuletzt gesichert "+wZeit(W.letzteOk)+".":""))}
+}
+function wAlarm(g){W.fehler++;wSet("warn",g)}
+async function wPruefe(){
+  if(leseFehler||!AID)return true;
+  var st=await IDB.read("stamp_"+AID);
+  if(!st.ok){wAlarm("Der Speicher antwortet nicht. Begehung bitte sofort über «Sichern» ablegen.");return false}
+  if(!st.v||st.v.fp!==fpr(P)){ if(sv)return true; return await flush(); }
+  if(W.stand==="warn"){W.fehler=0;W.letzteOk=st.v.t||Date.now();wSet("ok")}
+  return true;
+}
+async function flush(){
+  clearTimeout(sv);sv=null;
+  if(leseFehler||!AID)return true;
+  if(flushing){try{await flushing}catch(e){}}
+  var id=AID,snap=P;
+  flushing=(async function(){
+    wSet("busy");
+    var fp=fpr(snap),jetzt=Date.now();
+    var ok=await IDB.setAll([["job_"+id,snap],
+                             ["stamp_"+id,{fp:fp,t:jetzt,n:(snap.maengel||[]).length}],
+                             ["notfall_"+id,magerkopie(snap)]]);
+    if(!ok){
+      wAlarm("Der Speicher ist voll oder gesperrt. Bitte die Begehung sofort über «Sichern» ablegen.");
+      if(!saveFail){saveFail=true;toast("Speichern fehlgeschlagen – bitte «Sichern»")}
+      return false;                     /* Index nicht fortschreiben, er würde sonst lügen */
+    }
+    var k=await IDB.read("stamp_"+id);
+    if(!k.ok||!k.v||k.v.fp!==fp){
+      wAlarm("Die Kontrolle nach dem Speichern hat die Begehung nicht wiedergefunden. Bitte «Sichern».");
+      return false;
+    }
+    saveFail=false;W.fehler=0;W.letzteOk=jetzt;wSet("ok");
+    var m=jobMeta(id,snap),i=-1;
+    JOBS.forEach(function(x,kk){if(x.id===id)i=kk});
+    if(i<0)JOBS.unshift(m);else JOBS[i]=m;
+    await IDB.set("jobs",JOBS);
+    return true;
+  })().catch(function(){return false});
+  var r=await flushing;flushing=null;return r;
+}
+function save(){clearTimeout(sv);sv=setTimeout(flush,400);head();
+  if(W.stand!=="warn")wSet("busy","nicht gesichert…")}
+function sichErinnerung(){
+  if(!AID||!P.maengel.length)return;
+  var t=bkLetzte(AID),n=bkAnzahl(AID);
+  if(!n&&P.maengel.length>=5){
+    wSet("warn","Bereits "+P.maengel.length+" Mängel erfasst und noch keine Sicherung. Bitte jetzt sichern.");
+  }else if(n&&Date.now()-t>1800000&&W.stand!=="warn"){
+    toast("Seit über 30 Minuten nicht gesichert – bitte «Sichern»");
+  }
+}
+var wLauf=false;
+async function wTick(){
+  if(wLauf)return;wLauf=true;
+  try{
+    if(sv)await flush(); else await wPruefe();
+    if(navigator.storage&&navigator.storage.estimate){
+      var e=await navigator.storage.estimate();
+      if(e&&e.quota&&e.usage/e.quota>0.9&&!W.vollGemeldet){W.vollGemeldet=true;
+        wAlarm("Der Speicher ist fast voll. Bitte erfasste Begehungen senden und danach löschen.")}
+    }
+  }catch(e){}
+  wLauf=false;
+}
+setInterval(wTick,20000);
+setInterval(function(){try{sichHinweis();sichErinnerung()}catch(e){}},60000);
+window.addEventListener("pagehide",function(){flush()});
+document.addEventListener("visibilitychange",function(){if(document.hidden)flush()});
+/* Erkennt, WARUM nicht gespeichert wird – der häufigste Grund ist der falsche Öffnungsweg */
+function warnText(){
+  var pr=location.protocol, dn=(location.pathname||"").split("/").pop()||"Erfassung-vor-Ort.html";
+  try{dn=decodeURIComponent(dn)}catch(e){}
+  var android=/Android/i.test(navigator.userAgent);
+  if(android&&pr!=="https:"){
+    return "<b>So geöffnet speichert das Handy nichts.</b> Die Datei läuft nicht aus dem Download-Ordner, "+
+      "sondern aus der Dateien- bzw. Download-App heraus – dabei sperrt Android den Speicher, und beim "+
+      "Schliessen wäre alles weg. (Auch ein Inkognito-Tab führt dazu.)"+
+      "<br><br><b>Richtig geht es so:</b> In Chrome oben in die Adresszeile tippen und diese Adresse "+
+      "eingeben:<br><code style=\"display:inline-block;margin:5px 0;padding:4px 7px;background:#fff;"+
+      "border-radius:5px;font-size:12.5px;word-break:break-all\">file:///storage/emulated/0/Download/"+
+      esc(dn)+"</code><br>Danach im Chrome-Menü «Zum Startbildschirm hinzufügen» – ab dann startet die "+
+      "App richtig, und dieser rote Hinweis verschwindet.";
+  }
+  if(pr==="file:"){
+    return "<b>Dieses Gerät speichert nichts dauerhaft.</b> Die Erfassung läuft, aber alles liegt nur im "+
+      "Arbeitsspeicher – beim Schliessen des Browsers wäre es weg. Häufigster Grund: ein privates bzw. "+
+      "Inkognito-Fenster, oder die Datei wurde direkt aus einem ZIP geöffnet. Bitte in einem normalen "+
+      "Fenster und aus einem echten Ordner starten. Solange dieser Hinweis steht: nach <b>jedem</b> Mangel "+
+      "über «Sichern» die Datei ablegen.";
+  }
+  return "<b>Dieses Gerät speichert nichts dauerhaft.</b> Die Erfassung läuft, aber alles liegt nur im "+
+    "Arbeitsspeicher. Bitte nach <b>jedem</b> Mangel über «Sichern» die Datei ablegen.";
+}
+async function init(){
+  if(navigator.storage&&navigator.storage.persist){try{navigator.storage.persist()}catch(e){}}
+  var ix=await IDB.read("jobs");
+  if(!ix.ok){
+    leseFehler=true;$("#noStore").hidden=false;
+    $("#noStore").textContent="Der Speicher konnte nicht gelesen werden. Damit nichts überschrieben wird, "+
+      "wird jetzt nichts gespeichert. Bitte die Seite neu laden.";
+    JOBS=[];P=blank();drawJobs();drawList();show("home");return;
+  }
+  JOBS=ix.v||[];
+  var ok=await IDB.set("__t",1);
+  if(!ok||RAM){
+    $("#noStore").hidden=false;
+    $("#noStore").innerHTML=warnText();
+  }
+  AID=LS.get("fh_mobactive");
+
+  /* Verwaiste Begehungen retten */
+  if(!JOBS.length){
+    var keys=await IDB.keys();
+    for(var i=0;i<keys.length;i++){var k=keys[i];
+      if(typeof k==="string"&&k.indexOf("job_")===0){
+        var r=await IDB.read(k);
+        if(r.ok&&r.v&&r.v.meta)JOBS.push(jobMeta(k.slice(4),r.v));
+      }}
+    if(JOBS.length){await IDB.set("jobs",JOBS);
+      setTimeout(function(){toast(JOBS.length+" Begehung(en) wiederhergestellt")},800)}
+  }
+
+  var mig=LS.get("fh_mob");
+  if(mig&&mig.meta&&!JOBS.length){var id=uid();
+    if(await IDB.set("job_"+id,mig)){
+      JOBS=[jobMeta(id,mig)];
+      if(await IDB.set("jobs",JOBS)){AID=id;LS.set("fh_mobactive",id);
+        try{localStorage.removeItem("fh_mob")}catch(e){}}
+    }else{toast("Alte Begehung konnte nicht übernommen werden")}}
+  if(!JOBS.length){await jobNew(false);show("home");return}
+  var hit=false;JOBS.forEach(function(x){if(x.id===AID)hit=true});
+  if(!hit)AID=JOBS[0].id;
+  var rr=await IDB.read("job_"+AID);
+  if(!rr.ok){
+    leseFehler=true;$("#noStore").hidden=false;
+    $("#noStore").textContent="Die Begehung konnte nicht gelesen werden. Es wird nichts überschrieben – bitte neu laden.";
+    P=blank();drawJobs();show("home");return;
+  }
+  if(!rr.v){
+    JOBS=JOBS.filter(function(x){return x.id!==AID});await IDB.set("jobs",JOBS);
+    if(!JOBS.length){AID=null;await jobNew(false);show("home");return}
+    AID=JOBS[0].id;var r2=await IDB.read("job_"+AID);
+    P=(r2.ok&&r2.v)||blank();
+  }else P=rr.v;
+  LS.set("fh_mobactive",AID);
+  last.geb=P.gebaeude[0]||"";
+  drawJobs();drawList();show("home");
+}
+async function jobNew(jump){
+  if(AID&&!P.maengel.length&&!P.meta.kundeName&&!P.meta.objektName){
+    if(jump!==false){openMeta();toast("Kundendaten erfassen")}
+    return;
+  }
+  await flush();
+  clearTimeout(sv);sv=null;
+  var id=uid();P=blank();AID=id;LS.set("fh_mobactive",id);last={geb:P.gebaeude[0],sto:"EG"};
+  if(!(await IDB.set("job_"+id,P))&&!RAM){toast("Speicher voll – bitte alte Begehungen senden und löschen");return}
+  var da=false;JOBS.forEach(function(x){if(x.id===id)da=true});
+  if(!da)JOBS.unshift(jobMeta(id,P));
+  await IDB.set("jobs",JOBS);
+  drawJobs();drawList();
+  if(jump!==false){openMeta();toast("Neue Begehung – Kundendaten erfassen")}
+}
+async function jobOpen(id){
+  if(id!==AID)await flush();
+  var r=await IDB.read("job_"+id);
+  if(!r.ok){toast("Konnte nicht gelesen werden – bitte neu laden");return}
+  if(!r.v){JOBS=JOBS.filter(function(x){return x.id!==id});await IDB.set("jobs",JOBS);
+    drawJobs();toast("Nicht gefunden – Eintrag entfernt");return}
+  P=r.v;AID=id;LS.set("fh_mobactive",id);last={geb:P.gebaeude[0],sto:"EG"};
+  drawJobs();drawList();show("list")
+}
+async function jobDel(id){
+  var nm="",anz=0,dat="";JOBS.forEach(function(x){if(x.id===id){nm=x.kunde;anz=x.n||0;dat=x.datum||""}});
+  var wege=bkAnzahl(id),b=bkGet(id);
+  var fz=0;var r=await IDB.read("job_"+id);if(r.ok&&r.v)fz=fotoZahl(r.v);
+
+  /* Stufe 1 – was geht verloren */
+  if(!confirm("Begehung löschen?\n\n"+
+      "   Kunde:    "+(nm||"—")+"\n"+
+      "   Begehung: "+de(dat)+"\n"+
+      "   Mängel:   "+anz+"\n"+
+      "   Fotos:    "+fz+"\n\n"+
+      "Das gibt Speicher auf dem Handy frei. Die Fotos sind danach auf diesem Gerät "+
+      "endgültig weg."))return;
+
+  /* Stufe 2 – ungesichert: harte Warnung, Löschen nur nach Eingabe */
+  if(anz&&wege<2){
+    var wl=[];["teilen","datei","mail","fotos","lesbar"].forEach(function(w){if(b[w])wl.push(w)});
+    alert("STOPP – diese Begehung ist nicht ausreichend gesichert.\n\n"+
+      "Gesicherte Wege: "+(wl.length?wl.join(", "):"KEINER")+"\n\n"+
+      "Ein Rundgang lässt sich nicht wiederholen. Bitte zuerst über «Sichern» mindestens zwei "+
+      "Wege erledigen – danach lässt sich die Begehung gefahrlos löschen.");
+    var wort=prompt("Wenn die Begehung trotzdem gelöscht werden soll, hier LOESCHEN eintippen "+
+                    "(in Grossbuchstaben). Abbrechen mit «Abbrechen».","");
+    if(String(wort||"").trim().toUpperCase()!=="LOESCHEN"){toast("Nicht gelöscht");return}
+    if(!confirm("Letzte Rückfrage: «"+nm+"» mit "+anz+" Mängeln und "+fz+
+                " Fotos wirklich unwiderruflich löschen?"))return;
+  }else{
+    /* gesichert – trotzdem eine bewusste zweite Bestätigung */
+    if(!confirm("«"+nm+"» ist über "+wege+" Wege gesichert.\n\n"+
+                "Jetzt vom Handy löschen und den Platz freigeben?"))return;
+  }
+  if(AID===id){                        /* sonst schreibt ein Flush die Begehung wieder zurück */
+    clearTimeout(sv);sv=null;
+    if(flushing){try{await flushing}catch(e){}}
+    AID=null;P=blank();try{localStorage.removeItem("fh_mobactive")}catch(e){}
+  }
+  if(!(await IDB.del("job_"+id))){toast("Löschen fehlgeschlagen – bitte neu laden");return}
+  await IDB.del("stamp_"+id);await IDB.del("notfall_"+id);
+  JOBS=JOBS.filter(function(x){return x.id!==id});await IDB.set("jobs",JOBS);
+  if(!AID){ if(JOBS.length){await jobOpen(JOBS[0].id)}else{await jobNew(false)} }
+  drawJobs();toast("Gelöscht")
+}
+
+/* ---------- Ansichten ---------- */
+function show(v){
+  $("#vHome").hidden=v!=="home";$("#vMeta").hidden=v!=="meta";
+  $("#vList").hidden=v!=="list";$("#vEdit").hidden=v!=="edit";
+  $("#fabHome").hidden=v!=="home";$("#fabList").hidden=v!=="list";
+  window.scrollTo(0,0);head()
+}
+function head(){
+  $("#htitle").textContent=P.meta.kundeName||"Neue Begehung";
+  $("#hsub").textContent=P.meta.objektName||"Kunde noch nicht erfasst";
+  $("#hcnt").textContent=P.maengel.length;
+}
+$("#home").onclick=function(){drawJobs();show("home")};
+
+/* ---------- Bilder ---------- */
+function shrink(file){return new Promise(function(res){
+  var fr=new FileReader();
+  fr.onload=function(){var im=new Image();
+    im.onload=function(){
+      var max=1400,w=im.width,h=im.height;
+      if(Math.max(w,h)>max){var r=max/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
+      var c=document.createElement("canvas");c.width=w;c.height=h;
+      var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
+      res(c.toDataURL("image/jpeg",.8))};
+    im.onerror=function(){res(null)};im.src=fr.result};
+  fr.onerror=function(){res(null)};fr.readAsDataURL(file)})}
+async function addFotos(files){
+  var list=[].slice.call(files||[]).filter(function(f){return /^image\//.test(f.type)});
+  if(!list.length)return;
+  toast(list.length+" Bild(er) werden verkleinert…");
+  for(var i=0;i<list.length;i++){var d=await shrink(list[i]);
+    if(d)fotos.push({data:d,caption:fotos.length?"Detail":"Übersicht"})}
+  drawThumbs();toast("Foto hinzugefügt")}
+function drawThumbs(){
+  $("#thumbs").innerHTML=fotos.map(function(f,i){
+    return '<div class="th"><img src="'+f.data+'"><button class="x" data-x="'+i+'">✕</button>'+
+           '<div class="lg" data-l="'+i+'">'+esc(f.caption||"Legende")+'</div></div>'}).join("");
+  $$("[data-x]").forEach(function(b){b.onclick=function(){fotos.splice(+b.dataset.x,1);drawThumbs()}});
+  $$("[data-l]").forEach(function(b){b.onclick=function(){
+    var i=+b.dataset.l,v=prompt("Bildlegende",fotos[i].caption||"");
+    if(v!==null){fotos[i].caption=v;drawThumbs()}}})}
+
+/* ---------- Auswahl-Chips ---------- */
+function chips(host,arr,val,key){
+  $(host).innerHTML=arr.map(function(x){return '<button data-v="'+esc(x)+'"'+(x===val?' class="on"':'')+'>'+esc(x)+'</button>'}).join("")
+    +'<button class="add" data-new="1">+ neu</button>';
+  $$(host+" [data-v]").forEach(function(b){b.onclick=function(){
+    $$(host+" button").forEach(function(o){o.classList.remove("on")});b.classList.add("on");last[key]=b.dataset.v}});
+  $(host+" [data-new]").onclick=function(){
+    var v=prompt(key==="geb"?"Neues Gebäude":"Neues Stockwerk");if(!v)return;v=v.trim();if(!v)return;
+    var a=key==="geb"?P.gebaeude:P.stockwerke;
+    if(a.indexOf(v)<0)a.push(v);save();last[key]=v;chips(host,a,v,key)}}
+
+/* ---------- Kundendaten ---------- */
+function openMeta(){
+  var m=P.meta;
+  $("#m_kunde").value=m.kundeName;$("#m_kontakt").value=m.kundeKontakt;$("#m_tel").value=m.kundeTel||"";
+  $("#m_mail").value=m.kundeMail;$("#m_kadr").value=m.kundeAdresse;
+  $("#m_objekt").value=m.objektName;$("#m_adr").value=m.objektAdresse;
+  $("#m_nutz").value=m.objektNutzung;$("#m_gvz").value=m.objektGvz;
+  $("#m_nr").value=m.berichtNr;$("#m_datum").value=m.begehung;$("#m_wer").value=m.ersteller;
+  $("#m_teil").value=m.teilnehmer;$("#m_anlass").value=m.anlass;
+  show("meta")}
+$("#edMeta").onclick=openMeta;
+$("#metaOk").onclick=function(){
+  var m=P.meta;
+  m.kundeName=$("#m_kunde").value.trim();m.kundeKontakt=$("#m_kontakt").value.trim();
+  m.kundeTel=$("#m_tel").value.trim();m.kundeMail=$("#m_mail").value.trim();
+  m.kundeAdresse=$("#m_kadr").value.trim();m.objektName=$("#m_objekt").value.trim();
+  m.objektAdresse=$("#m_adr").value.trim();m.objektNutzung=$("#m_nutz").value.trim();
+  m.objektGvz=$("#m_gvz").value.trim();m.berichtNr=$("#m_nr").value.trim();
+  m.begehung=$("#m_datum").value||today();m.datum=m.begehung;
+  m.ersteller=$("#m_wer").value.trim();m.teilnehmer=$("#m_teil").value.trim();
+  m.anlass=$("#m_anlass").value.trim();
+  if(m.ersteller)LS.set("fh_wer",m.ersteller);
+  save();flush().then(drawJobs);drawList();show("list");toast("Kundendaten gespeichert")};
+
+/* ---------- Mangel ---------- */
+function openEdit(id){
+  edit=null;P.maengel.forEach(function(m){if(m.id===id)edit=m});
+  $("#edTitle").textContent=edit?"Mangel bearbeiten":"Neuer Mangel";
+  $("#edDel").hidden=!edit;
+  fotos=edit?JSON.parse(JSON.stringify(edit.fotos||[])):[];
+  $("#e_ort").value=edit?edit.ort||"":"";
+  $("#e_titel").value=edit?edit.titel||"":"";
+  $("#e_kat").value=edit?edit.kategorie||"":"";
+  $("#e_fest").value=edit?edit.feststellung||"":"";
+  var pr=edit?edit.prio||"mittel":"mittel";
+  $$("#pkPrio button").forEach(function(b){b.classList.toggle("on",b.dataset.p===pr)});
+  if(edit){last.geb=edit.gebaeude;last.sto=edit.stockwerk}
+  if(!last.geb)last.geb=P.gebaeude[0]||"";
+  chips("#pkGeb",P.gebaeude,last.geb,"geb");
+  chips("#pkSto",P.stockwerke,last.sto,"sto");
+  $("#dikLive").textContent="";$("#dikInfo").hidden=true;
+  if(vorOrt){$("#e_ort").value=vorOrt;vorOrt=""}
+  sugOrt();sugTyp();
+  $("#edSaveNext").hidden=!!edit;$("#nextHint").hidden=!!edit;
+  drawThumbs();show("edit")}
+
+/* ---------- Vorschläge: letzte Lage & häufige Mängel ---------- */
+var MTYP=[{"t":"Leitungsdurchführung nicht verschlossen","k":"Abschottung / Brandabschnitte","f":"Kabel- bzw. Rohrdurchführung in einem brandabschnittsbildenden Bauteil ist nicht feuerwiderstandsfähig verschlossen."},{"t":"Nachträglicher Durchbruch offen","k":"Abschottung / Brandabschnitte","f":"Nachträglich erstellter Durchbruch im brandabschnittsbildenden Bauteil ist offen bzw. nur provisorisch verschlossen."},{"t":"Abschottung nicht gekennzeichnet","k":"Abschottung / Brandabschnitte","f":"Ausgeführte Abschottung ist vorhanden, aber ohne Kennzeichnungsschild; System und Feuerwiderstand nicht nachvollziehbar."},{"t":"Installationsschacht nicht brandabschnittsbildend","k":"Abschottung / Brandabschnitte","f":"Haustechnische Leitungen über mehrere Geschosse sind nicht in einem brandabschnittsbildenden Schacht geführt."},{"t":"Brandschutztüre verkeilt oder aufgebunden","k":"Brandschutzabschlüsse / Türen","f":"Brandschutzabschluss wird mit Keil / Haken dauerhaft offen gehalten; Selbstschliessung ausser Funktion."},{"t":"Selbstschliessung defekt","k":"Brandschutzabschlüsse / Türen","f":"Brandschutzabschluss schliesst nicht selbsttätig vollständig ins Schloss."},{"t":"Brandschutzabschluss beschädigt / unzulässig verändert","k":"Brandschutzabschlüsse / Türen","f":"Türblatt, Zarge oder Dichtung beschädigt bzw. nachträglich durchbohrt; Feuerwiderstand nicht mehr gewährleistet."},{"t":"Fluchtweg durch Lagerung eingeengt","k":"Flucht- und Rettungswege","f":"Im Fluchtweg ist Material gelagert; die freie Durchgangsbreite ist eingeschränkt."},{"t":"Fluchtweg zweckentfremdet genutzt","k":"Flucht- und Rettungswege","f":"Der Fluchtweg wird ausserhalb der Nutzungseinheit als Lager- oder Abstellfläche genutzt."},{"t":"Mindestbreite unterschritten","k":"Flucht- und Rettungswege","f":"Die nutzbare Breite des horizontalen Fluchtwegs unterschreitet das geforderte Mass."},{"t":"Notausgang verschlossen","k":"Flucht- und Rettungswege","f":"Notausgangstüre ist abgeschlossen und kann im Ereignisfall nicht ohne Hilfsmittel geöffnet werden."},{"t":"Türe öffnet gegen die Fluchtrichtung","k":"Flucht- und Rettungswege","f":"Türe im Fluchtweg lässt sich nicht in Fluchtrichtung öffnen."},{"t":"Ausgang durch Fahrzeug/Material versperrt","k":"Flucht- und Rettungswege","f":"Der Ausgang ins Freie ist von aussen durch abgestellte Gegenstände versperrt."},{"t":"Rettungszeichen fehlt","k":"Kennzeichnung","f":"Ausgang bzw. Fluchtrichtung ist nicht mit einem Rettungszeichen gekennzeichnet."},{"t":"Rettungszeichen verdeckt oder unleserlich","k":"Kennzeichnung","f":"Rettungszeichen ist verdeckt, verschmutzt oder zu klein und dadurch nicht leicht erkennbar."},{"t":"Sicherheitsleuchte defekt","k":"Sicherheits- und Notbeleuchtung","f":"Sicherheitsleuchte im Fluchtweg ist ausgefallen."},{"t":"Periodische Kontrolle nicht nachgewiesen","k":"Sicherheits- und Notbeleuchtung","f":"Für die Sicherheitsbeleuchtung liegen keine Nachweise über die periodischen Kontrollen vor."},{"t":"Kontrollbuch fehlt","k":"Sicherheits- und Notbeleuchtung","f":"Über Funktionskontrollen, Wartung und Instandsetzung wird kein Kontrollbuch geführt."},{"t":"Handfeuerlöscher nicht zugänglich","k":"Löscheinrichtungen","f":"Löschgerät ist durch Material verstellt bzw. nicht frei erreichbar."},{"t":"Löschgerät fehlt","k":"Löscheinrichtungen","f":"Im Bereich ist kein Löschgerät vorhanden; eine Brandbekämpfung im Entstehungsstadium ist nicht möglich."},{"t":"Kontrollfrist abgelaufen","k":"Löscheinrichtungen","f":"Die Prüfetikette des Löschgeräts ist abgelaufen; die periodische Wartung ist nicht nachgewiesen."},{"t":"Wasserlöschposten nicht betriebsbereit","k":"Löscheinrichtungen","f":"Wasserlöschposten ist verstellt, undicht oder das Strahlrohr fehlt."},{"t":"Melder verdeckt oder verstellt","k":"Brandmeldeanlage","f":"Brandmelder ist durch Lagerung, Einbauten oder Abdeckung in seiner Funktion beeinträchtigt."},{"t":"Periodische Kontrolle nicht nachgewiesen","k":"Brandmeldeanlage","f":"Für die Brandmeldeanlage liegen keine aktuellen Kontrollnachweise vor."},{"t":"Abschaltung nicht organisiert","k":"Brandmeldeanlage","f":"Vorübergehende Ausserbetriebsetzung von Anlageteilen ist nicht geregelt bzw. nicht gemeldet."},{"t":"Brandschutzklappe nicht kontrolliert","k":"Lüftung / Brandschutzklappen","f":"Für die Brandschutzklappen liegt kein Nachweis der periodischen Kontrolle vor."},{"t":"Revisionsöffnung nicht zugänglich","k":"Lüftung / Brandschutzklappen","f":"Die Kontroll- bzw. Reinigungsöffnung der Lüftungsleitung ist verbaut oder nicht erreichbar."},{"t":"Lüftungsanlage stark verschmutzt","k":"Lüftung / Brandschutzklappen","f":"Ablagerungen in Leitungen bzw. Abluftanlage stellen eine zusätzliche Brandgefahr dar."},{"t":"Sicherheitsabstand zu brennbarem Material unterschritten","k":"Bauliche Massnahmen","f":"Brennbares Material ist zu nahe am Feuerungsaggregat bzw. an der Abgasanlage gelagert."},{"t":"Unzulässige Lagerung im Aufstell-/Heizraum","k":"Lagerung / Brandlasten","f":"Im Aufstellraum der Feuerung wird mehr als der zulässige Brennstoffvorrat bzw. sachfremdes Material gelagert."},{"t":"Anlage nicht zugänglich für Wartung","k":"Bauliche Massnahmen","f":"Wärmeerzeuger bzw. Abgasanlage ist für Bedienung, Wartung und Reinigung nicht frei zugänglich."},{"t":"Instandhaltung nicht dokumentiert","k":"Organisatorischer Brandschutz","f":"Für die brandschutztechnischen Einrichtungen fehlen Nachweise über Kontrollen und Wartung."},{"t":"Keine brandschutzverantwortliche Person bezeichnet","k":"Organisatorischer Brandschutz","f":"Im Betrieb ist keine für den Brandschutz verantwortliche Person bestimmt."},{"t":"Brennbare Flüssigkeiten unsachgemäss gelagert","k":"Lagerung / Brandlasten","f":"Behälter mit brennbaren Flüssigkeiten bzw. Gasen sind zu nahe an einer Zündquelle abgestellt."},{"t":"Brandlasten im Technikraum","k":"Lagerung / Brandlasten","f":"Im Technik-/Elektroraum wird sachfremdes, brennbares Material gelagert."},{"t":"Provisorische Elektroinstallation","k":"Elektrische Anlagen","f":"Dauerhaft betriebene provisorische Installation (Mehrfachsteckleisten, offene Verbindungen) festgestellt."}];
+var vorOrt="";
+function ortListe(){var a=[],seen={};
+  for(var i=P.maengel.length-1;i>=0&&a.length<3;i--){var o=(P.maengel[i].ort||"").trim();
+    if(o&&!seen[o]){seen[o]=1;a.push(o)}}
+  return a}
+function sugOrt(){
+  var box=$("#sugOrt"),a=ortListe();
+  box.innerHTML=a.length?a.map(function(o){
+    return '<button type="button" data-so="'+esc(o)+'">&#8617; '+esc(o)+'</button>'}).join(""):"";
+  $$("#sugOrt [data-so]").forEach(function(b){b.onclick=function(){
+    $("#e_ort").value=b.dataset.so}});
+}
+function typListe(){var a=LS.get("fh_typen");return (a&&a.length)?a:[]}
+function typMerken(t){
+  if(!t)return;var a=typListe().filter(function(x){return x!==t});a.unshift(t);
+  LS.set("fh_typen",a.slice(0,6))}
+function sugTyp(){
+  var box=$("#sugTyp"),a=typListe();
+  box.innerHTML='<button type="button" class="go" id="typBtn">&#9889; Aus Liste w&auml;hlen</button>'+
+    a.map(function(t){return '<button type="button" data-st="'+esc(t)+'">'+esc(t)+'</button>'}).join("");
+  $("#typBtn").onclick=typOpen;
+  $$("#sugTyp [data-st]").forEach(function(b){b.onclick=function(){typNimm(b.dataset.st)}});
+}
+function typNimm(titel){
+  var e=null;MTYP.forEach(function(x){if(x.t===titel)e=x});
+  $("#e_titel").value=titel;
+  if(e){ if(e.k)$("#e_kat").value=e.k;
+         if(e.f&&!$("#e_fest").value.trim())$("#e_fest").value=e.f; }
+  typMerken(titel);sugTyp();typClose();
+  toast(e&&e.f?"\u00dcbernommen \u2013 Text bei Bedarf anpassen":"\u00dcbernommen");
+}
+function typOpen(){$("#ovTyp").hidden=false;$("#typQ").value="";typDraw("");setTimeout(function(){$("#typQ").focus()},60)}
+function typClose(){$("#ovTyp").hidden=true}
+function typDraw(q){
+  q=(q||"").toLowerCase();
+  var g={},ord=[];
+  MTYP.forEach(function(x){
+    if(q&&(x.t+" "+x.k+" "+x.f).toLowerCase().indexOf(q)<0)return;
+    if(!g[x.k]){g[x.k]=[];ord.push(x.k)}
+    g[x.k].push(x)});
+  $("#typList").innerHTML=ord.length?ord.map(function(k){
+    return '<div class="grp">'+esc(k)+'</div>'+g[k].map(function(x){
+      return '<button class="ti" data-tt="'+esc(x.t)+'">'+esc(x.t)+'</button>'}).join("")}).join("")
+    :'<div class="empty">Nichts gefunden.</div>';
+  $$("#typList [data-tt]").forEach(function(b){b.onclick=function(){typNimm(b.dataset.tt)}});
+}
+$("#typClose").onclick=typClose;
+$("#typQ").oninput=function(){typDraw(this.value)};
+$("#ovTyp").onclick=function(e){if(e.target===$("#ovTyp"))typClose()};
+/* ---------- Sprachnotiz → Text ---------- */
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+var rec=null, recOn=false;
+function dikInfo(t){var e=$("#dikInfo");e.innerHTML=t;e.hidden=false}
+function dikTastatur(){
+  dikInfo('<b>Diktieren über die Tastatur:</b> ins Textfeld tippen und auf dem Tastatur-Mikrofon '+
+          'sprechen. Das funktioniert immer, auch ohne Internet, und schreibt direkt ins Feld.');
+}
+function dikSetzen(txt){
+  if(!txt)return;
+  var ta=$("#e_fest"), cur=ta.value.trim();
+  txt=txt.trim();
+  txt=txt.charAt(0).toUpperCase()+txt.slice(1);
+  if(!/[.!?]$/.test(txt))txt+=".";
+  ta.value=(cur?cur+" ":"")+txt;
+  if(ta.value.length>400)ta.value=ta.value.slice(0,400);
+}
+function dikStop(){
+  recOn=false;
+  try{if(rec)rec.stop()}catch(e){}
+  $("#dikBtn").classList.remove("rec");
+  $("#dikBtn").textContent="🎤 Sprachnotiz aufnehmen";
+  $("#dikLive").textContent="";
+}
+function dikStart(){
+  if(!SR){ dikTastatur(); setTimeout(function(){$("#e_fest").focus()},0); toast("Diktat über die Tastatur nutzen"); return; }
+  try{
+    rec=new SR();
+    rec.lang="de-CH"; rec.continuous=true; rec.interimResults=true;
+    rec.onresult=function(ev){
+      var live="";
+      for(var i=ev.resultIndex;i<ev.results.length;i++){
+        var r=ev.results[i];
+        if(r.isFinal){dikSetzen(r[0].transcript)}else{live+=r[0].transcript}
+      }
+      $("#dikLive").textContent=live?"… "+live:"";
+    };
+    rec.onerror=function(ev){
+      dikStop();
+      if(ev.error!=="aborted"&&ev.error!=="no-speech") setTimeout(function(){$("#e_fest").focus()},0);
+      if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){
+        dikInfo('<b>Das Mikrofon ist für diese Datei gesperrt.</b> Chrome erlaubt Mikrofonzugriff nur bei '+
+                'Adressen mit https, nicht bei lokal geöffneten Dateien.<br>'+
+                'Nutze stattdessen das <b>Mikrofon der Tastatur</b>: ins Textfeld tippen und darauf sprechen. '+
+                'Das schreibt genauso direkt ins Feld und funktioniert auch offline.');
+      } else if(ev.error==="network"){
+        dikInfo('<b>Keine Verbindung.</b> Die Spracherkennung von Chrome braucht Internet. '+
+                'Ohne Empfang das <b>Mikrofon der Tastatur</b> verwenden – das arbeitet offline.');
+      } else if(ev.error!=="aborted" && ev.error!=="no-speech"){
+        dikInfo("Spracherkennung nicht möglich ("+ev.error+"). Bitte das Tastatur-Mikrofon nutzen.");
+      }
+    };
+    rec.onend=function(){ if(recOn){ try{rec.start()}catch(e){dikStop()} } };
+    rec.start();
+    recOn=true;
+    $("#dikBtn").classList.add("rec");
+    $("#dikBtn").textContent="■ Aufnahme stoppen";
+    $("#dikLive").textContent="… hört zu";
+  }catch(e){ dikStop(); dikTastatur(); }
+}
+$("#dikBtn").onclick=function(){ recOn?dikStop():dikStart() };
+$("#dikClear").onclick=function(){ $("#e_fest").value=""; $("#dikLive").textContent="" };
+
+function edSpeichern(weiter){
+  var t=$("#e_titel").value.trim();
+  if(!t&&!fotos.length){toast("Bitte Foto oder Kurzbezeichnung angeben");return false}
+  var sel=$("#pkPrio .on"),pr=sel?sel.dataset.p:"mittel";
+  var ort=$("#e_ort").value.trim();
+  var o={id:edit?edit.id:uid(),gebaeude:last.geb||"",stockwerk:last.sto||"",ort:ort,
+    titel:t||"Mangel",kategorie:$("#e_kat").value,feststellung:$("#e_fest").value.trim(),
+    normen:[],massnahme:"",prio:pr,frist:"",verantwortlich:"",fotos:fotos};
+  if(edit){P.maengel[P.maengel.indexOf(edit)]=o}else{P.maengel.push(o)}
+  if(t)typMerken(t);
+  dikStop();save();flush().then(drawJobs);drawList();
+  if(weiter){vorOrt=ort;openEdit(null);toast("Gespeichert \u2013 n\u00e4chster Mangel hier")}
+  else{show("list");toast("Gespeichert")}
+  return true}
+$("#edSave").onclick=function(){edSpeichern(false)};
+$("#edSaveNext").onclick=function(){edSpeichern(true)};
+$("#edDel").onclick=function(){
+  if(!edit||!confirm("Mangel löschen?"))return;
+  P.maengel.splice(P.maengel.indexOf(edit),1);save();flush().then(drawJobs);drawList();show("list");toast("Gelöscht")};
+$("#edCancel").onclick=function(){dikStop();show("list")};
+$("#camBtn").onclick=function(){$("#cam").click()};
+$("#galBtn").onclick=function(){$("#gal").click()};
+$("#cam").onchange=function(e){addFotos(e.target.files);e.target.value=""};
+$("#gal").onchange=function(e){addFotos(e.target.files);e.target.value=""};
+$$("#pkPrio button").forEach(function(b){b.onclick=function(){
+  $$("#pkPrio button").forEach(function(o){o.classList.remove("on")});b.classList.add("on")}});
+$("#fabNew").onclick=function(){openEdit(null)};
+$("#jobNew").onclick=function(){jobNew(true)};
+
+/* ---------- Listen ---------- */
+function drawJobs(){
+  $("#jobs").innerHTML=JOBS.length?JOBS.map(function(x){
+    return '<div class="item'+(x.id===AID?' on':'')+'"><div class="n">'+x.n+'</div>'+
+      '<div style="flex:1;min-width:0" data-j="'+x.id+'"><div class="tt">'+esc(x.kunde)+
+      (x.id===AID?' <span class="tag t-mittel">offen</span>':'')+'</div>'+
+      '<div class="lo">'+esc([x.objekt,x.nr,de(x.datum)].filter(Boolean).join(" · ")||"—")+'</div></div>'+
+      '<span class="bk '+(bkAnzahl(x.id)>=2?'ok':(bkAnzahl(x.id)?'':'warn'))+'">'+
+        (bkAnzahl(x.id)>=2?'gesichert':(bkAnzahl(x.id)?'1 Weg':'ungesichert'))+'</span>'+
+      '<button class="btn sm" data-js="'+x.id+'">Sichern</button>'+
+      '<button class="btn sm dgr" data-jx="'+x.id+'">✕</button></div>'
+  }).join(""):'<div class="empty"><span class="big">▤</span>Noch keine Begehung.</div>';
+  $$("[data-j]").forEach(function(b){b.onclick=function(){jobOpen(b.dataset.j)}});
+  $$("[data-js]").forEach(function(b){b.onclick=function(){sendJob(b.dataset.js)}});
+  $$("[data-jx]").forEach(function(b){b.onclick=function(){jobDel(b.dataset.jx)}});
+  if(navigator.storage&&navigator.storage.estimate){navigator.storage.estimate().then(function(e){
+    var mb=function(n){return(n/1048576).toFixed(1)+" MB"};
+    $("#quota").textContent=JOBS.length+" Begehungen · belegt "+mb(e.usage||0)+(e.quota?" von "+mb(e.quota):"")
+  }).catch(function(){})}
+}
+function drawList(){
+  head();sichHinweis();
+  var m=P.meta;
+  $("#metaBox").innerHTML='<div><b>'+esc(m.kundeName||"– Kunde noch nicht erfasst –")+'</b>'+
+    (m.kundeKontakt?' · '+esc(m.kundeKontakt):'')+'</div>'+
+    '<div style="color:#5b6470">'+esc(m.objektName||"")+(m.objektAdresse?"<br>"+esc(m.objektAdresse):"")+
+    '<br>Begehung: '+esc(de(m.begehung))+(m.ersteller?" · "+esc(m.ersteller):"")+'</div>';
+  $("#list").innerHTML=P.maengel.length?P.maengel.map(function(x,i){
+    return '<div class="item" data-e="'+x.id+'"><div class="n">'+(i+1)+'</div>'+
+      (x.fotos&&x.fotos.length?'<img src="'+x.fotos[0].data+'">':'')+
+      '<div style="flex:1;min-width:0"><div class="tt">'+esc(x.titel)+'</div>'+
+      '<div class="lo">'+esc([x.gebaeude,x.stockwerk,x.ort].filter(Boolean).join(" · "))+'</div></div>'+
+      '<span class="tag t-'+x.prio+'">'+({dringend:"Dringend",mittel:"Mittel",leicht:"Leicht"}[x.prio]||x.prio)+'</span></div>'
+  }).join(""):'<div class="empty"><span class="big">📷</span>Noch nichts erfasst.<br>Unten auf «+ Mangel erfassen» tippen.</div>';
+  $$("[data-e]").forEach(function(b){b.onclick=function(){openEdit(b.dataset.e)}})}
+
+/* ---------- Senden ---------- */
+function nameOf(p){
+  var a=(p.meta.kundeName||"Erfassung").replace(/[^\wäöüÄÖÜ\- ]/g,"").trim().replace(/\s+/g,"_");
+  return "Erfassung_"+a+"_"+(p.meta.begehung||today())+".4hb"}
+/* ===================================================================
+   Sicherungs-Zentrum – mehrere unabhängige Wege, damit nichts verloren geht
+=================================================================== */
+var SICH=null;                       /* aktuell im Blatt bearbeitete Begehung */
+function bkGet(id){var o=LS.get("fh_backup")||{};return o[id]||{}}
+function bkSet(id,weg){var o=LS.get("fh_backup")||{};o[id]=o[id]||{};o[id][weg]=Date.now();
+  LS.set("fh_backup",o);if(SICH&&SICH.id===id)sichZeichnen();drawJobs();sichHinweis()}
+function bkAnzahl(id){var b=bkGet(id),n=0;["teilen","datei","mail","fotos","lesbar"].forEach(function(w){if(b[w])n++});return n}
+function bkLetzte(id){var b=bkGet(id),t=0;for(var k in b){if(b[k]>t)t=b[k]}return t}
+
+function protokoll(p){
+  var L=["BRANDSCHUTZ-BEGEHUNG – Rohdaten aus der Handy-Erfassung","",
+    "Kunde: "+(p.meta.kundeName||"—"),
+    "Objekt: "+(p.meta.objektName||"—")+(p.meta.objektAdresse?", "+p.meta.objektAdresse:""),
+    "Bericht-Nr.: "+(p.meta.berichtNr||"—"),
+    "Begehung: "+de(p.meta.begehung)+"   Erfasst von: "+(p.meta.ersteller||"—"),
+    "Mängel: "+p.maengel.length,""];
+  if(p.meta.kundeKontakt)L.push("Ansprechperson: "+p.meta.kundeKontakt);
+  if(p.meta.kundeMail||p.meta.kundeTel)L.push("Kontakt: "+[p.meta.kundeMail,p.meta.kundeTel].filter(Boolean).join(" / "));
+  if(p.meta.anlass)L.push("","Anlass: "+p.meta.anlass);
+  L.push("","────────────────────────────");
+  p.maengel.forEach(function(m,i){
+    L.push("",(i+1)+". "+(m.titel||"Mangel")+"   ["+(m.prio||"mittel").toUpperCase()+"]",
+      "   Ort: "+[m.gebaeude,m.stockwerk,m.ort].filter(Boolean).join(" · "),
+      "   Kategorie: "+(m.kategorie||"—"),
+      "   Feststellung: "+(m.feststellung||"—"),
+      "   Fotos: "+((m.fotos||[]).length));
+  });
+  L.push("","────────────────────────────",
+    "Diese E-Mail enthält die Texte, nicht die Fotos. Die vollständige Datei",
+    "("+nameOf(p)+") liegt im Download-Ordner des Handys und wird über",
+    "«Teilen» in Google Drive abgelegt.");
+  return L.join("\n");
+}
+function dateiAblegen(p){
+  var name=nameOf(p),blob=new Blob([JSON.stringify(p)],{type:"application/json"});
+  var u=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=u;a.setAttribute("download",name);a.rel="noopener";a.style.display="none";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);a.remove()},900);
+  return name;
+}
+async function wegTeilen(p){
+  var name=nameOf(p),blob=new Blob([JSON.stringify(p)],{type:"application/json"});
+  try{
+    var f=new File([blob],name,{type:"application/json"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:name});
+      bkSet(p.id||AID,"teilen");toast("Geteilt – am PC importieren");return true}
+  }catch(e){ if(e&&e.name==="AbortError")return false;
+    toast("Teilen nicht möglich – bitte Weg 2 oder 3 verwenden"); }
+  dateiAblegen(p);bkSet(p.id||AID,"datei");
+  toast("Teilen ging nicht – Datei liegt im Download-Ordner");
+  return true;
+}
+async function wegFotos(p){
+  var fs=[],n=0;
+  p.maengel.forEach(function(m,i){
+    (m.fotos||[]).forEach(function(f,j){
+      try{
+        var b=atob(String(f.data).split(",")[1]||"");
+        var arr=new Uint8Array(b.length);for(var k=0;k<b.length;k++)arr[k]=b.charCodeAt(k);
+        fs.push(new File([arr],"Mangel-"+("0"+(i+1)).slice(-2)+"-Bild-"+(j+1)+".jpg",{type:"image/jpeg"}));n++;
+      }catch(e){}
+    })});
+  if(!n){toast("Keine Fotos erfasst");return false}
+  try{
+    if(navigator.canShare&&navigator.canShare({files:fs})){
+      await navigator.share({files:fs,title:"Fotos "+(p.meta.kundeName||"Begehung")});
+      bkSet(p.id||AID,"fotos");toast(n+" Fotos geteilt");return true}
+  }catch(e){ if(e&&e.name==="AbortError")return false }
+  /* Fallback: einzeln herunterladen */
+  fs.forEach(function(f,i){ setTimeout(function(){
+    var u=URL.createObjectURL(f),a=document.createElement("a");
+    a.href=u;a.setAttribute("download",f.name);a.style.display="none";
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(u);a.remove()},600);
+  },i*350)});
+  bkSet(p.id||AID,"fotos");toast(n+" Fotos in den Download-Ordner gelegt");
+  return true;
+}
+function txtAblegen(p,txt){
+  var nm="Begehung_"+(p.meta.kundeName||"Kunde").replace(/[^A-Za-z0-9äöüÄÖÜ]+/g,"_")+"_"+
+          (p.meta.begehung||today())+".txt";
+  var bl=new Blob([txt],{type:"text/plain;charset=utf-8"});
+  var u=URL.createObjectURL(bl),a=document.createElement("a");
+  a.href=u;a.setAttribute("download",nm);a.style.display="none";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);a.remove()},900);
+  return nm;
+}
+var MAILMAX=1500;                    /* konservativ: manche Mail-Apps kappen früher */
+function wegMail(p){
+  var adr=($("#sichMailAdr").value||"").trim()||"info@4-hands.ch";
+  $("#sichMailAdr").value=adr;
+  if(adr)LS.set("fh_backupmail",adr);
+  var txt=protokoll(p);
+  var betreff="Begehung "+(p.meta.kundeName||"ohne Kunde")+" – "+de(p.meta.begehung)+
+              " ("+p.maengel.length+" Mängel)";
+  var lang=txt.length>MAILMAX;
+  var body=txt;
+  if(lang){
+    /* Nichts stillschweigend abschneiden: der volle Text geht als Datei mit */
+    var nm=txtAblegen(p,txt);
+    body=txt.slice(0,MAILMAX)+
+      "\n\n[Der Text ist zu lang für eine E-Mail. Der VOLLSTÄNDIGE Text liegt als Datei\n"+
+      nm+" im Ordner Download dieses Handys – bitte an diese Mail anhängen.]";
+  }
+  var url="mailto:"+encodeURIComponent(adr)+"?subject="+encodeURIComponent(betreff)+
+          "&body="+encodeURIComponent(body);
+  try{window.location.href=url}catch(e){}
+  setTimeout(function(){
+    var frage=lang
+      ? "Die E-Mail wurde vorbereitet. Der vollständige Text liegt zusätzlich als Textdatei im Ordner Download.\n\nHaben Sie die E-Mail abgeschickt?"
+      : "Die E-Mail wurde vorbereitet.\n\nHaben Sie die E-Mail abgeschickt?";
+    if(confirm(frage))bkSet(p.id||AID,"mail");
+    else toast("Weg 3 bleibt offen – bitte erneut versuchen oder Text kopieren");
+  },1200);
+  return txt;
+}
+function sichZeichnen(){
+  if(!SICH)return;
+  var p=SICH.p,id=SICH.id,b=bkGet(id);
+  $("#sichInfo").innerHTML="<b>"+esc(p.meta.kundeName||"Ohne Kunde")+"</b> · "+p.maengel.length+
+    " Mängel · "+fotoZahl(p)+" Fotos<br>Bitte mindestens zwei Wege benutzen. Ein Rundgang lässt sich nicht wiederholen.";
+  [["teilen","stTeilen"],["datei","stDatei"],["mail","stMail"],["fotos","stFotos"],["lesbar","stLesbar"]].forEach(function(w){
+    var el=$("#"+w[1]),box=document.querySelector('.sichw[data-w="'+w[0]+'"]');
+    if(b[w[0]]){el.textContent="erledigt "+wZeit(b[w[0]]);box.classList.add("fertig")}
+    else{el.textContent="offen";box.classList.remove("fertig")}
+  });
+  $("#sichOk").hidden=bkAnzahl(id)<2;
+}
+function fotoZahl(p){var n=0;(p.maengel||[]).forEach(function(m){n+=(m.fotos||[]).length});return n}
+async function sichOeffnen(p,id){
+  if(!p.maengel.length){toast("Noch nichts erfasst");return}
+  SICH={p:p,id:id};
+  $("#sichMailAdr").value=LS.get("fh_backupmail")||"info@4-hands.ch";
+  sichZeichnen();$("#ovSich").hidden=false;
+}
+/* ---------- Weg 5: lesbare Datei, die ohne jedes Werkzeug auskommt ---------- */
+function lesbarHtml(p){
+  var m=p.meta||{},E=esc;
+  var kopf='<h1>Brandschutz-Begehung</h1>'+
+    '<table class="k"><tr><td>Kunde</td><td><b>'+E(m.kundeName||"—")+'</b></td></tr>'+
+    (m.kundeKontakt?'<tr><td>Ansprechperson</td><td>'+E(m.kundeKontakt)+'</td></tr>':'')+
+    (m.kundeMail||m.kundeTel?'<tr><td>Kontakt</td><td>'+E([m.kundeMail,m.kundeTel].filter(Boolean).join(" · "))+'</td></tr>':'')+
+    (m.kundeAdresse?'<tr><td>Adresse Kunde</td><td>'+E(m.kundeAdresse)+'</td></tr>':'')+
+    '<tr><td>Objekt</td><td>'+E(m.objektName||"—")+(m.objektAdresse?', '+E(m.objektAdresse):'')+'</td></tr>'+
+    (m.objektNutzung?'<tr><td>Nutzung</td><td>'+E(m.objektNutzung)+'</td></tr>':'')+
+    (m.objektGvz?'<tr><td>GVZ-Nr.</td><td>'+E(m.objektGvz)+'</td></tr>':'')+
+    (m.berichtNr?'<tr><td>Bericht-Nr.</td><td>'+E(m.berichtNr)+'</td></tr>':'')+
+    '<tr><td>Begehung</td><td>'+E(de(m.begehung))+'</td></tr>'+
+    (m.ersteller?'<tr><td>Erfasst von</td><td>'+E(m.ersteller)+'</td></tr>':'')+
+    (m.teilnehmer?'<tr><td>Teilnehmende</td><td>'+E(m.teilnehmer)+'</td></tr>':'')+
+    (m.anlass?'<tr><td>Anlass</td><td>'+E(m.anlass)+'</td></tr>':'')+
+    '<tr><td>Mängel</td><td>'+p.maengel.length+'</td></tr></table>';
+  var PL={dringend:"Dringend",mittel:"Mittel",leicht:"Leicht"};
+  var body=p.maengel.map(function(x,i){
+    return '<div class="m"><div class="mh"><span class="nr">'+(i+1)+'</span>'+
+      '<span class="ti">'+E(x.titel||"Mangel")+'</span>'+
+      '<span class="pr p-'+E(x.prio||"mittel")+'">'+E(PL[x.prio]||x.prio||"")+'</span></div>'+
+      '<table class="k"><tr><td>Ort</td><td>'+E([x.gebaeude,x.stockwerk,x.ort].filter(Boolean).join(" · ")||"—")+'</td></tr>'+
+      (x.kategorie?'<tr><td>Kategorie</td><td>'+E(x.kategorie)+'</td></tr>':'')+
+      '<tr><td>Feststellung</td><td>'+E(x.feststellung||"—")+'</td></tr></table>'+
+      ((x.fotos||[]).length?'<div class="f">'+x.fotos.map(function(f){
+        return '<img src="'+f.data+'" alt="">'}).join("")+'</div>':'')+
+      '</div>';
+  }).join("");
+  return '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<title>Begehung '+E(m.kundeName||"")+' '+E(de(m.begehung))+'</title><style>'+
+    'body{margin:0;padding:16px;font:15px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1a1d21;background:#f4f5f7}'+
+    '.w{max-width:820px;margin:0 auto;background:#fff;border-radius:12px;padding:18px 18px 26px;box-shadow:0 2px 10px rgba(0,0,0,.07)}'+
+    'h1{font-size:20px;margin:0 0 4px}.sub{color:#5b6470;font-size:13px;margin-bottom:16px}'+
+    'table.k{width:100%;border-collapse:collapse;margin:0 0 6px;font-size:14px}'+
+    'table.k td{padding:3px 0;vertical-align:top}table.k td:first-child{width:130px;color:#5b6470}'+
+    '.m{border:1px solid #e2e5ea;border-radius:10px;padding:12px 13px;margin:14px 0}'+
+    '.mh{display:flex;align-items:center;gap:9px;margin-bottom:7px;flex-wrap:wrap}'+
+    '.nr{background:#15181c;color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}'+
+    '.ti{font-weight:700;flex:1;min-width:0}'+
+    '.pr{font-size:11px;padding:2px 8px;border-radius:20px;color:#fff}'+
+    '.p-dringend{background:#b3261e}.p-mittel{background:#c8901a}.p-leicht{background:#6b7480}'+
+    '.f{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.f img{width:180px;border-radius:7px;border:1px solid #e2e5ea}'+
+    '.hin{background:#eef2f7;border-left:4px solid #15181c;padding:11px 13px;border-radius:7px;font-size:13px;margin-bottom:16px}'+
+    '@media print{body{background:#fff;padding:0}.w{box-shadow:none;border-radius:0}.m{break-inside:avoid}}'+
+    '</style></head><body><div class="w">'+kopf+
+    '<div class="sub">Rohaufnahme aus der Handy-Erfassung · '+E(fotoZahl(p))+' Fotos</div>'+
+    '<div class="hin"><b>Diese Datei ist die Sicherung des Rundgangs.</b> Sie enthält alle Texte und alle '+
+    'Fotos in sich – sie funktioniert ohne Internet, ohne App und ohne das PC-Tool. Zum Ausdrucken oder als '+
+    'PDF sichern: Browser-Menü → Drucken.</div>'+
+    body+'</div></body></html>';
+}
+function wegLesbar(p){
+  var nm="Begehung_"+String(p.meta.kundeName||"Kunde").replace(/[^A-Za-z0-9äöüÄÖÜ]+/g,"_")+"_"+
+         (p.meta.begehung||today())+"_LESBAR.html";
+  var bl=new Blob([lesbarHtml(p)],{type:"text/html;charset=utf-8"});
+  var u=URL.createObjectURL(bl),a=document.createElement("a");
+  a.href=u;a.setAttribute("download",nm);a.style.display="none";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);a.remove()},1200);
+  return nm;
+}
+$("#sichLesbar").onclick=function(){
+  if(!SICH)return;
+  var nm=wegLesbar(SICH.p);bkSet(SICH.id,"lesbar");
+  toast("Im Download-Ordner: "+nm);
+};
+
+/* ---------- Begehung aus einer Datei zurückholen ---------- */
+$("#jobImp").onclick=function(){$("#jobFile").click()};
+$("#jobFile").onchange=function(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=async function(){
+    var d;
+    try{d=JSON.parse(r.result)}catch(err){toast("Datei nicht lesbar");return}
+    if(!d||!Array.isArray(d.maengel)){toast("Das ist keine Begehungs-Datei");return}
+    var nm=(d.meta&&d.meta.kundeName)||"ohne Kunde";
+    if(!confirm("«"+nm+"» mit "+d.maengel.length+" Mängeln als neue Begehung laden?"))return;
+    await flush();
+    var id=uid(),neu=blank();
+    neu.meta=Object.assign(neu.meta,d.meta||{});
+    neu.maengel=d.maengel.map(function(x){
+      var c=Object.assign({gebaeude:"",stockwerk:"",ort:"",titel:"",kategorie:"",feststellung:"",
+        prio:"mittel",fotos:[]},x);
+      c.id=c.id||uid();if(!Array.isArray(c.fotos))c.fotos=[];return c});
+    if(Array.isArray(d.gebaeude)&&d.gebaeude.length)neu.gebaeude=d.gebaeude;
+    if(Array.isArray(d.stockwerke)&&d.stockwerke.length)neu.stockwerke=d.stockwerke;
+    if(!(await IDB.set("job_"+id,neu))&&!RAM){toast("Speicher voll – zuerst alte Begehungen löschen");return}
+    P=neu;AID=id;LS.set("fh_mobactive",id);
+    JOBS.unshift(jobMeta(id,neu));
+    if(!(await IDB.set("jobs",JOBS))&&!RAM){toast("Konnte nicht abgelegt werden");return}
+    last={geb:P.gebaeude[0],sto:"EG"};
+    drawJobs();drawList();show("list");
+    toast(neu.maengel.length+" Mängel geladen");
+  };
+  r.readAsText(f);e.target.value="";
+};
+
+$("#sichClose").onclick=function(){$("#ovSich").hidden=true;SICH=null};
+$("#ovSich").onclick=function(e){if(e.target===$("#ovSich")){$("#ovSich").hidden=true;SICH=null}};
+$("#sichTeilen").onclick=function(){if(SICH)wegTeilen(SICH.p)};
+$("#sichDatei").onclick=function(){if(!SICH)return;var n=dateiAblegen(SICH.p);bkSet(SICH.id,"datei");
+  toast("Liegt im Download-Ordner: "+n)};
+$("#sichFotos").onclick=function(){if(SICH)wegFotos(SICH.p)};
+$("#sichMail").onclick=function(){if(SICH)wegMail(SICH.p)};
+$("#sichKopie").onclick=function(){
+  if(!SICH)return;
+  var t=protokoll(SICH.p),ta=document.createElement("textarea");
+  ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);
+  ta.select();ta.setSelectionRange(0,t.length);
+  var ok=false;try{ok=document.execCommand("copy")}catch(e){}
+  ta.remove();
+  if(ok){bkSet(SICH.id,"mail");toast("Text kopiert – in eine E-Mail einfügen")}
+  else if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){
+    bkSet(SICH.id,"mail");toast("Text kopiert")}).catch(function(){toast("Kopieren nicht möglich")})}
+  else toast("Kopieren nicht möglich");
+};
+function sichHinweis(){
+  var el=$("#sichHint");if(!el)return;
+  if(!AID||!P.maengel.length){el.textContent="";return}
+  var n=bkAnzahl(AID),t=bkLetzte(AID);
+  if(!n){el.innerHTML='<b style="color:#b3261e">noch keine Sicherung – bitte «Sichern»</b>'}
+  else if(n<2){el.innerHTML='1 Sicherungsweg ('+wZeit(t)+') – bitte einen zweiten'}
+  else{el.textContent=n+" Sicherungswege · zuletzt "+wZeit(t)}
+}
+async function sendData(p){ return sichOeffnen(p,p===P?AID:(p.id||AID)) }
+async function sendJob(id){
+  if(id===AID){await flush();return sichOeffnen(P,id)}
+  var r=await IDB.read("job_"+id);
+  if(!r.ok||!r.v){toast("Begehung nicht lesbar");return}
+  sichOeffnen(r.v,id);
+}
+$("#fabSend").onclick=function(){flush().then(function(){sichOeffnen(P,AID)})};
+$("#alarmSich").onclick=function(){flush().then(function(){sichOeffnen(P,AID)})};
+
+document.addEventListener("visibilitychange",function(){if(document.hidden){clearTimeout(sv);flush()}});
+window.addEventListener("pagehide",function(){clearTimeout(sv);flush()});
+init();
+})();
+</script>
+<script>
+/* Offline-Bereitschaft: nach dem ersten Aufruf laeuft die App ohne Netz */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
