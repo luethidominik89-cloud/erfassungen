@@ -1,5 +1,5 @@
 /* Offline-Speicher der App. Version hochzählen, wenn eine neue Fassung hochgeladen wird. */
-const VERSION = 'fh-handy-v1';
+const VERSION = 'fh-handy-v3';
 const DATEIEN = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
