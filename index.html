@@ -84,6 +84,13 @@ textarea{min-height:96px;resize:vertical}
   font-size:12.5px;line-height:1.5;margin-bottom:9px}
 .mini{font-size:12px;color:var(--ink3);padding:0 2px 8px}
 .bkinfo{margin-top:7px;font-size:12.5px;color:#1f8a4c;background:#eef7f0;border-radius:6px;padding:6px 9px;word-break:break-all}
+.ent{background:#fff8e6;border:1px solid #e8cf8c;border-radius:12px;padding:11px 13px;margin:0 0 12px;font-size:13.5px;color:#6b5310}
+.ent b{display:block;font-size:14.5px;color:#4a3a05}
+.ent #entwTxt{display:block;margin:3px 0 0;font-size:12.5px}
+.ent .eb{display:flex;gap:8px;margin-top:10px}
+.ent .eb .btn{flex:1}
+.ghint{margin-top:8px;font-size:12.5px;color:#5b6470;background:#f2f5f8;border-radius:7px;padding:7px 9px}
+.ghint.viel{background:#fff3e0;color:#8a5300}
 .mehr{margin-top:4px}
 .mehr summary{cursor:pointer;padding:11px 13px;background:#eef2f7;border-radius:9px;
   font-size:13.5px;font-weight:600;color:#5b6470;list-style:none}
@@ -142,13 +149,9 @@ textarea{min-height:96px;resize:vertical}
 .item .bk.warn{background:#fdecea;color:#b3261e}
 [hidden]{display:none!important}
 </style>
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" href="./icon-192.png">
-<link rel="apple-touch-icon" href="./icon-192.png">
-<meta name="theme-color" content="#15181c">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#b3261e">
+<link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 <header>
@@ -218,9 +221,18 @@ textarea{min-height:96px;resize:vertical}
 
   <!-- ---------- Mängel-Liste ---------- -->
   <section id="vList" hidden>
+    <div class="ent" id="entwBox" hidden>
+      <b>Angefangener Mangel gefunden</b>
+      <span id="entwTxt"></span>
+      <div class="eb">
+        <button class="btn p" id="entwGo">Weiterschreiben</button>
+        <button class="btn" id="entwWeg">Verwerfen</button>
+      </div>
+    </div>
     <div class="card">
       <h2>Begehung <button class="btn sm" id="edMeta" style="margin-left:auto">Kundendaten</button></h2>
       <div class="bd" id="metaBox" style="font-size:14px"></div>
+      <div class="bd" style="padding-top:0"><div class="ghint" id="grossHint" hidden></div></div>
     </div>
     <div class="card">
       <h2>Erfasste Mängel</h2>
@@ -315,6 +327,13 @@ textarea{min-height:96px;resize:vertical}
 
     <details class="mehr" id="sichMehr">
       <summary>Weitere Wege &ndash; nur im Notfall n&ouml;tig</summary>
+      <div class="sichw" data-w="klein">
+        <div class="k"><b>Bericht ohne Fotos ablegen</b></div>
+        <p>Ergibt eine sehr kleine Datei, die auch bei schlechtem Empfang durchgeht.
+        Die Fotos danach &uuml;ber <b>Weg 3</b> schicken &ndash; das PC-Tool setzt beides
+        wieder zusammen.</p>
+        <button class="btn w" id="sichOhne">Kleine Datei ablegen</button>
+      </div>
       <div class="sichw" data-w="teilen">
         <div class="k"><b>Teilen-Men&uuml;</b><span class="st" id="stTeilen">offen</span></div>
         <p>Schickt die Datei ins Android-Teilen-Men&uuml;. Funktioniert nicht auf jedem Ger&auml;t.</p>
@@ -591,7 +610,11 @@ async function init(){
   }else P=rr.v;
   LS.set("fh_mobactive",AID);
   last.geb=P.gebaeude[0]||"";
-  drawJobs();drawList();show("home");
+  await entwPruefen();
+  drawJobs();drawList();
+  /* Ein angefangener Mangel ist das Dringendste – dann nicht auf der Übersicht landen. */
+  show(entwStand?"list":"home");
+  if(entwStand)setTimeout(function(){toast("Ein angefangener Mangel wartet – siehe gelber Hinweis")},1200);
 }
 async function jobNew(jump){
   if(AID&&!P.maengel.length&&!P.meta.kundeName&&!P.meta.objektName){
@@ -615,6 +638,7 @@ async function jobOpen(id){
   if(!r.v){JOBS=JOBS.filter(function(x){return x.id!==id});await IDB.set("jobs",JOBS);
     drawJobs();toast("Nicht gefunden – Eintrag entfernt");return}
   P=r.v;AID=id;LS.set("fh_mobactive",id);last={geb:P.gebaeude[0],sto:"EG"};
+  await entwPruefen();
   drawJobs();drawList();show("list")
 }
 async function jobDel(id){
@@ -661,12 +685,40 @@ async function jobDel(id){
 }
 
 /* ---------- Ansichten ---------- */
+var VIEW="home";
 function show(v){
+  VIEW=v;
   $("#vHome").hidden=v!=="home";$("#vMeta").hidden=v!=="meta";
   $("#vList").hidden=v!=="list";$("#vEdit").hidden=v!=="edit";
   $("#fabHome").hidden=v!=="home";$("#fabList").hidden=v!=="list";
   window.scrollTo(0,0);head()
 }
+/* ---------- Zurück-Taste ----------
+   In der installierten App gibt es keinen Zurück-Pfeil im Browser. Ohne Vorkehrung
+   beendet die Systemtaste die ganze App – mitten in der Erfassung der schlimmste
+   Fehlgriff. Ein einzelner Wächter-Eintrag im Verlauf fängt den Druck ab; danach
+   wird er sofort wieder gesetzt, damit die Taste dauerhaft bei uns landet. */
+var exitTs=0;
+function histWaechter(){try{history.pushState({fh:1},"")}catch(e){}}
+function zurueckGehen(){          /* true = selbst erledigt, Wächter neu setzen */
+  if($("#ovTyp")&&!$("#ovTyp").hidden){typClose();return true}
+  if($("#ovSich")&&!$("#ovSich").hidden){$("#ovSich").hidden=true;SICH=null;return true}
+  if(VIEW==="edit"){
+    if(entwHat(entwSammeln())){
+      if(!confirm("Der angefangene Mangel ist noch nicht gespeichert.\n\n"+
+                  "OK = zurück zur Liste, der Entwurf bleibt aufbewahrt.\n"+
+                  "Abbrechen = hier bleiben und weiter erfassen."))return true;
+    }
+    entwVerlassen();return true;
+  }
+  if(VIEW==="meta"){show("list");return true}
+  if(VIEW==="list"){show("home");drawJobs();return true}
+  /* Übersicht: erst der zweite Druck schliesst die App. */
+  if(Date.now()-exitTs<2500)return false;
+  exitTs=Date.now();toast("Nochmals «Zurück» drücken, um die App zu schliessen");
+  return true;
+}
+window.addEventListener("popstate",function(){if(zurueckGehen())histWaechter()});
 function head(){
   $("#htitle").textContent=P.meta.kundeName||"Neue Begehung";
   $("#hsub").textContent=P.meta.objektName||"Kunde noch nicht erfasst";
@@ -674,25 +726,86 @@ function head(){
 }
 $("#home").onclick=function(){drawJobs();show("home")};
 
-/* ---------- Bilder ---------- */
+/* ---------- Bilder ----------
+   Ein Mangelfoto muss den Befund zeigen, nicht die Wandstruktur. 1200 Pixel reichen
+   auch für den Druck im Bericht (rund 380 dpi bei 8 cm Bildbreite) und halten die
+   Datei so klein, dass sie als Mailanhang durchgeht. Die Originale in voller
+   Auflösung bleiben ohnehin in der Galerie des Handys. */
+var FOTO_MAX=1200, FOTO_Q=.72;
+/* Ab dieser Grösse nimmt kein Mailanbieter den Anhang mehr zuverlässig an. */
+function mailGrenze(){return 20*1048576}
+function malen(im,max,q){
+  var w=im.width,h=im.height;
+  if(Math.max(w,h)>max){var r=max/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
+  var c=document.createElement("canvas");c.width=w;c.height=h;
+  var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
+  return c.toDataURL("image/jpeg",q);
+}
 function shrink(file){return new Promise(function(res){
   var fr=new FileReader();
   fr.onload=function(){var im=new Image();
-    im.onload=function(){
-      var max=1400,w=im.width,h=im.height;
-      if(Math.max(w,h)>max){var r=max/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
-      var c=document.createElement("canvas");c.width=w;c.height=h;
-      var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);
-      res(c.toDataURL("image/jpeg",.8))};
+    im.onload=function(){try{res(malen(im,FOTO_MAX,FOTO_Q))}catch(e){res(null)}};
     im.onerror=function(){res(null)};im.src=fr.result};
   fr.onerror=function(){res(null)};fr.readAsDataURL(file)})}
+function nachschrumpfen(dataUrl,max,q){return new Promise(function(res){
+  var im=new Image();
+  im.onload=function(){try{res(malen(im,max,q))}catch(e){res(null)}};
+  im.onerror=function(){res(null)};im.src=dataUrl})}
 async function addFotos(files){
   var list=[].slice.call(files||[]).filter(function(f){return /^image\//.test(f.type)});
   if(!list.length)return;
   toast(list.length+" Bild(er) werden verkleinert…");
   for(var i=0;i<list.length;i++){var d=await shrink(list[i]);
     if(d)fotos.push({data:d,caption:fotos.length?"Detail":"Übersicht"})}
-  drawThumbs();toast("Foto hinzugefügt")}
+  drawThumbs();entwMerken();toast("Foto hinzugefügt")}
+
+/* ---------- Grössenwächter ----------
+   Die Datei besteht praktisch nur aus Fotos. Deshalb wird über die Fotodaten
+   gerechnet und nicht die ganze Begehung serialisiert – das wäre auf dem Handy
+   bei jedem Tastendruck zu teuer. */
+function fotoBytes(p){var n=0;
+  (p.maengel||[]).forEach(function(m){(m.fotos||[]).forEach(function(f){n+=(f.data||"").length})});
+  return n}
+function dateiBytes(p){return fotoBytes(p)+1200*((p.maengel||[]).length+8)}
+function mb(n){return (n/1048576).toFixed(1)+" MB"}
+function grossHinweis(){
+  var el=$("#grossHint");if(!el)return;
+  if(!AID||!P.maengel.length||!fotoZahl(P)){el.hidden=true;return}
+  var b=dateiBytes(P);
+  el.hidden=false;
+  if(b>mailGrenze()*.7){
+    el.className="ghint viel";
+    el.innerHTML="Diese Begehung ist gross (ca. "+mb(b)+"). Beim Versand werden die Fotos "+
+      "automatisch weiter verkleinert, damit die E-Mail durchgeht. Sie müssen nichts tun.";
+  }else{
+    el.className="ghint";
+    el.textContent="Datei zum Versand: ca. "+mb(b)+" · "+fotoZahl(P)+" Fotos";
+  }
+}
+/* Verdichtet die Fotos einer Begehung stufenweise, bis die Datei unter die
+   Mailgrenze passt. Gibt zurück, was tatsächlich geschehen ist. */
+async function verdichten(p){
+  var vorher=dateiBytes(p);
+  if(vorher<=mailGrenze())return{noetig:false,vorher:vorher,nachher:vorher};
+  var stufen=[[1000,.62],[820,.55],[640,.48]];
+  for(var s=0;s<stufen.length;s++){
+    var max=stufen[s][0],q=stufen[s][1],erledigt=0,gesamt=fotoZahl(p);
+    toast("Fotos werden für den Versand verkleinert…");
+    for(var i=0;i<(p.maengel||[]).length;i++){
+      var fs=p.maengel[i].fotos||[];
+      for(var k=0;k<fs.length;k++){
+        var neu=await nachschrumpfen(fs[k].data,max,q);
+        if(neu&&neu.length<fs[k].data.length)fs[k].data=neu;
+        erledigt++;
+        if(erledigt%10===0)toast("Fotos verkleinert: "+erledigt+" von "+gesamt);
+      }
+    }
+    if(dateiBytes(p)<=mailGrenze())break;
+  }
+  var nachher=dateiBytes(p);
+  if(p===P){save();await flush();grossHinweis()}
+  return{noetig:true,vorher:vorher,nachher:nachher,passt:nachher<=mailGrenze()};
+}
 function drawThumbs(){
   $("#thumbs").innerHTML=fotos.map(function(f,i){
     return '<div class="th"><img src="'+f.data+'"><button class="x" data-x="'+i+'">✕</button>'+
@@ -761,6 +874,93 @@ function openEdit(id){
   sugOrt();sugTyp();
   $("#edSaveNext").hidden=!!edit;$("#nextHint").hidden=!!edit;
   drawThumbs();show("edit")}
+
+/* ---------- Entwurf-Autosicherung ----------
+   Beim Fotografieren wandert die App in den Hintergrund. Android beendet sie dort
+   bei knappem Speicher ohne Vorwarnung – der angefangene Mangel wäre weg. Deshalb
+   wird der offene Erfassungsbogen laufend still mitgeschrieben: Text sofort und
+   synchron in den kleinen Speicher (überlebt auch ein hartes Beenden), Fotos in die
+   Datenbank. Beim nächsten Start wird der Entwurf zum Weiterschreiben angeboten. */
+var entwT=null, entwStand=null;
+function entwSammeln(){
+  if(!$("#vEdit")||$("#vEdit").hidden)return null;
+  var sel=$("#pkPrio .on");
+  return{jid:AID,id:edit?edit.id:null,
+    ort:$("#e_ort").value,titel:$("#e_titel").value,kat:$("#e_kat").value,
+    fest:$("#e_fest").value,prio:sel?sel.dataset.p:"mittel",empf:$("#e_empf").checked,
+    geb:last.geb||"",sto:last.sto||"",fotos:fotos.slice(),t:Date.now()}}
+function entwHat(d){
+  return !!(d&&((d.titel||"").trim()||(d.ort||"").trim()||(d.fest||"").trim()||(d.fotos||[]).length))}
+function entwMerken(){clearTimeout(entwT);entwT=setTimeout(entwSchreiben,900)}
+function entwSchreiben(){
+  clearTimeout(entwT);entwT=null;
+  var d=entwSammeln();
+  /* Ist der Bogen gar nicht offen, war das ein Nachzügler der Verzögerung. Dann
+     darf hier nichts weggeräumt werden – sonst löscht er den eben aufbewahrten
+     Entwurf wieder weg. */
+  if(!d)return;
+  if(!entwHat(d)){entwLoeschen();return}
+  /* Der Textteil geht synchron weg – er ist dann auch dann sicher, wenn die App
+     im nächsten Moment abgeschossen wird. */
+  var mager={};for(var k in d){if(k!=="fotos")mager[k]=d[k]}
+  mager.nf=(d.fotos||[]).length;
+  LS.set("fh_entwurf",mager);
+  if(AID)IDB.set("entw_"+AID,d);
+}
+function entwLoeschen(){
+  clearTimeout(entwT);entwT=null;
+  try{localStorage.removeItem("fh_entwurf")}catch(e){}
+  if(AID)IDB.del("entw_"+AID);
+  entwStand=null;entwZeichnen();
+}
+async function entwPruefen(){
+  entwStand=null;
+  if(!AID){entwZeichnen();return}
+  var d=null;
+  try{d=await IDB.get("entw_"+AID)}catch(e){}
+  var l=LS.get("fh_entwurf");
+  /* Fällt die Datenbank aus, rettet der Textteil wenigstens das Geschriebene. */
+  if((!d||!entwHat(d))&&l&&l.jid===AID&&entwHat(l)){d=l;d.fotos=[];d.nurText=true}
+  if(d&&d.jid===AID&&entwHat(d))entwStand=d;
+  entwZeichnen();
+}
+function entwZeichnen(){
+  var box=$("#entwBox");if(!box)return;
+  if(!entwStand){box.hidden=true;return}
+  var d=entwStand,teile=[];
+  if((d.titel||"").trim())teile.push(d.titel.trim());
+  if((d.ort||"").trim())teile.push(d.ort.trim());
+  var nf=d.fotos?d.fotos.length:(d.nf||0);
+  if(nf)teile.push(nf+" Foto"+(nf>1?"s":""));
+  $("#entwTxt").innerHTML=esc(teile.join(" · ")||"ohne Bezeichnung")+
+    " · angefangen um "+wZeit(d.t)+
+    (d.nurText?"<br>Die Fotos dazu liessen sich nicht wiederherstellen – bitte neu aufnehmen.":"");
+  box.hidden=false;
+}
+/* Verlässt den Erfassungsbogen, ohne den angefangenen Mangel zu verlieren:
+   Entwurf wegschreiben und in der Liste sichtbar zum Weiterschreiben anbieten. */
+function entwVerlassen(){
+  var d=entwSammeln();
+  if(entwHat(d)){entwSchreiben();entwStand=d}
+  clearTimeout(entwT);entwT=null;
+  dikStop();show("list");drawList();
+}
+function entwOeffnen(){
+  var d=entwStand;if(!d)return;
+  openEdit(d.id||null);
+  $("#e_ort").value=d.ort||"";$("#e_titel").value=d.titel||"";
+  $("#e_kat").value=d.kat||"";$("#e_fest").value=d.fest||"";
+  $("#e_empf").checked=!!d.empf;
+  $$("#pkPrio button").forEach(function(b){b.classList.toggle("on",b.dataset.p===(d.prio||"mittel"))});
+  if(d.geb){last.geb=d.geb;chips("#pkGeb",P.gebaeude,d.geb,"geb")}
+  if(d.sto){last.sto=d.sto;
+    var stoL=P.stockwerke.indexOf("Stockwerkübergreifend")>=0?P.stockwerke
+      :P.stockwerke.concat(["Stockwerkübergreifend"]);
+    chips("#pkSto",stoL,d.sto,"sto")}
+  fotos=(d.fotos||[]).slice();drawThumbs();
+  entwStand=null;entwZeichnen();
+  toast(d.nurText?"Text wiederhergestellt":"Entwurf wiederhergestellt");
+}
 
 /* ---------- Vorschläge: letzte Lage & häufige Mängel ---------- */
 var MTYP=[{"t":"Leitungsdurchführung nicht verschlossen","k":"Abschottung / Brandabschnitte","f":"Kabel- bzw. Rohrdurchführung in einem brandabschnittsbildenden Bauteil ist nicht feuerwiderstandsfähig verschlossen."},{"t":"Nachträglicher Durchbruch offen","k":"Abschottung / Brandabschnitte","f":"Nachträglich erstellter Durchbruch im brandabschnittsbildenden Bauteil ist offen bzw. nur provisorisch verschlossen."},{"t":"Abschottung nicht gekennzeichnet","k":"Abschottung / Brandabschnitte","f":"Ausgeführte Abschottung ist vorhanden, aber ohne Kennzeichnungsschild; System und Feuerwiderstand nicht nachvollziehbar."},{"t":"Installationsschacht nicht brandabschnittsbildend","k":"Abschottung / Brandabschnitte","f":"Haustechnische Leitungen über mehrere Geschosse sind nicht in einem brandabschnittsbildenden Schacht geführt."},{"t":"Brandschutztüre verkeilt oder aufgebunden","k":"Brandschutzabschlüsse / Türen","f":"Brandschutzabschluss wird mit Keil / Haken dauerhaft offen gehalten; Selbstschliessung ausser Funktion."},{"t":"Selbstschliessung defekt","k":"Brandschutzabschlüsse / Türen","f":"Brandschutzabschluss schliesst nicht selbsttätig vollständig ins Schloss."},{"t":"Brandschutzabschluss beschädigt / unzulässig verändert","k":"Brandschutzabschlüsse / Türen","f":"Türblatt, Zarge oder Dichtung beschädigt bzw. nachträglich durchbohrt; Feuerwiderstand nicht mehr gewährleistet."},{"t":"Fluchtweg durch Lagerung eingeengt","k":"Flucht- und Rettungswege","f":"Im Fluchtweg ist Material gelagert; die freie Durchgangsbreite ist eingeschränkt."},{"t":"Fluchtweg zweckentfremdet genutzt","k":"Flucht- und Rettungswege","f":"Der Fluchtweg wird ausserhalb der Nutzungseinheit als Lager- oder Abstellfläche genutzt."},{"t":"Mindestbreite unterschritten","k":"Flucht- und Rettungswege","f":"Die nutzbare Breite des horizontalen Fluchtwegs unterschreitet das geforderte Mass."},{"t":"Notausgang verschlossen","k":"Flucht- und Rettungswege","f":"Notausgangstüre ist abgeschlossen und kann im Ereignisfall nicht ohne Hilfsmittel geöffnet werden."},{"t":"Türe öffnet gegen die Fluchtrichtung","k":"Flucht- und Rettungswege","f":"Türe im Fluchtweg lässt sich nicht in Fluchtrichtung öffnen."},{"t":"Ausgang durch Fahrzeug/Material versperrt","k":"Flucht- und Rettungswege","f":"Der Ausgang ins Freie ist von aussen durch abgestellte Gegenstände versperrt."},{"t":"Rettungszeichen fehlt","k":"Kennzeichnung","f":"Ausgang bzw. Fluchtrichtung ist nicht mit einem Rettungszeichen gekennzeichnet."},{"t":"Rettungszeichen verdeckt oder unleserlich","k":"Kennzeichnung","f":"Rettungszeichen ist verdeckt, verschmutzt oder zu klein und dadurch nicht leicht erkennbar."},{"t":"Sicherheitsleuchte defekt","k":"Sicherheits- und Notbeleuchtung","f":"Sicherheitsleuchte im Fluchtweg ist ausgefallen."},{"t":"Periodische Kontrolle nicht nachgewiesen","k":"Sicherheits- und Notbeleuchtung","f":"Für die Sicherheitsbeleuchtung liegen keine Nachweise über die periodischen Kontrollen vor."},{"t":"Kontrollbuch fehlt","k":"Sicherheits- und Notbeleuchtung","f":"Über Funktionskontrollen, Wartung und Instandsetzung wird kein Kontrollbuch geführt."},{"t":"Handfeuerlöscher nicht zugänglich","k":"Löscheinrichtungen","f":"Löschgerät ist durch Material verstellt bzw. nicht frei erreichbar."},{"t":"Löschgerät fehlt","k":"Löscheinrichtungen","f":"Im Bereich ist kein Löschgerät vorhanden; eine Brandbekämpfung im Entstehungsstadium ist nicht möglich."},{"t":"Kontrollfrist abgelaufen","k":"Löscheinrichtungen","f":"Die Prüfetikette des Löschgeräts ist abgelaufen; die periodische Wartung ist nicht nachgewiesen."},{"t":"Wasserlöschposten nicht betriebsbereit","k":"Löscheinrichtungen","f":"Wasserlöschposten ist verstellt, undicht oder das Strahlrohr fehlt."},{"t":"Melder verdeckt oder verstellt","k":"Brandmeldeanlage","f":"Brandmelder ist durch Lagerung, Einbauten oder Abdeckung in seiner Funktion beeinträchtigt."},{"t":"Periodische Kontrolle nicht nachgewiesen","k":"Brandmeldeanlage","f":"Für die Brandmeldeanlage liegen keine aktuellen Kontrollnachweise vor."},{"t":"Abschaltung nicht organisiert","k":"Brandmeldeanlage","f":"Vorübergehende Ausserbetriebsetzung von Anlageteilen ist nicht geregelt bzw. nicht gemeldet."},{"t":"Brandschutzklappe nicht kontrolliert","k":"Lüftung / Brandschutzklappen","f":"Für die Brandschutzklappen liegt kein Nachweis der periodischen Kontrolle vor."},{"t":"Revisionsöffnung nicht zugänglich","k":"Lüftung / Brandschutzklappen","f":"Die Kontroll- bzw. Reinigungsöffnung der Lüftungsleitung ist verbaut oder nicht erreichbar."},{"t":"Lüftungsanlage stark verschmutzt","k":"Lüftung / Brandschutzklappen","f":"Ablagerungen in Leitungen bzw. Abluftanlage stellen eine zusätzliche Brandgefahr dar."},{"t":"Sicherheitsabstand zu brennbarem Material unterschritten","k":"Bauliche Massnahmen","f":"Brennbares Material ist zu nahe am Feuerungsaggregat bzw. an der Abgasanlage gelagert."},{"t":"Unzulässige Lagerung im Aufstell-/Heizraum","k":"Lagerung / Brandlasten","f":"Im Aufstellraum der Feuerung wird mehr als der zulässige Brennstoffvorrat bzw. sachfremdes Material gelagert."},{"t":"Anlage nicht zugänglich für Wartung","k":"Bauliche Massnahmen","f":"Wärmeerzeuger bzw. Abgasanlage ist für Bedienung, Wartung und Reinigung nicht frei zugänglich."},{"t":"Instandhaltung nicht dokumentiert","k":"Organisatorischer Brandschutz","f":"Für die brandschutztechnischen Einrichtungen fehlen Nachweise über Kontrollen und Wartung."},{"t":"Keine brandschutzverantwortliche Person bezeichnet","k":"Organisatorischer Brandschutz","f":"Im Betrieb ist keine für den Brandschutz verantwortliche Person bestimmt."},{"t":"Brennbare Flüssigkeiten unsachgemäss gelagert","k":"Lagerung / Brandlasten","f":"Behälter mit brennbaren Flüssigkeiten bzw. Gasen sind zu nahe an einer Zündquelle abgestellt."},{"t":"Brandlasten im Technikraum","k":"Lagerung / Brandlasten","f":"Im Technik-/Elektroraum wird sachfremdes, brennbares Material gelagert."},{"t":"Provisorische Elektroinstallation","k":"Elektrische Anlagen","f":"Dauerhaft betriebene provisorische Installation (Mehrfachsteckleisten, offene Verbindungen) festgestellt."}];
@@ -886,7 +1086,7 @@ function edSpeichern(weiter){
     normen:[],massnahme:"",prio:pr,frist:"",verantwortlich:"",fotos:fotos,empf:$("#e_empf").checked};
   if(edit){P.maengel[P.maengel.indexOf(edit)]=o}else{P.maengel.push(o)}
   if(t)typMerken(t);
-  dikStop();save();flush().then(drawJobs);drawList();
+  dikStop();entwLoeschen();save();flush().then(drawJobs);drawList();
   if(weiter){openEdit(null);toast("Gespeichert \u2013 n\u00e4chster Mangel")}
   else{show("list");toast("Gespeichert")}
   return true}
@@ -894,8 +1094,25 @@ $("#edSave").onclick=function(){edSpeichern(false)};
 $("#edSaveNext").onclick=function(){edSpeichern(true)};
 $("#edDel").onclick=function(){
   if(!edit||!confirm("Mangel löschen?"))return;
-  P.maengel.splice(P.maengel.indexOf(edit),1);save();flush().then(drawJobs);drawList();show("list");toast("Gelöscht")};
-$("#edCancel").onclick=function(){dikStop();show("list")};
+  P.maengel.splice(P.maengel.indexOf(edit),1);entwLoeschen();
+  save();flush().then(drawJobs);drawList();show("list");toast("Gelöscht")};
+$("#edCancel").onclick=function(){
+  if(entwHat(entwSammeln())){
+    if(!confirm("Der angefangene Mangel ist noch nicht gespeichert.\n\n"+
+                "OK = zurück zur Liste, der Entwurf bleibt aufbewahrt und kann weitergeschrieben werden.\n"+
+                "Abbrechen = hier bleiben und weiter erfassen."))return;
+  }
+  entwVerlassen()};
+/* Jede Eingabe und jeder Griff im Erfassungsbogen sichert den Entwurf nach. */
+if($("#vEdit")){
+  $("#vEdit").addEventListener("input",entwMerken);
+  $("#vEdit").addEventListener("change",entwMerken);
+  $("#vEdit").addEventListener("click",function(){setTimeout(entwMerken,0)});
+}
+$("#entwGo").onclick=entwOeffnen;
+$("#entwWeg").onclick=function(){
+  if(!confirm("Den angefangenen Mangel endgültig verwerfen?"))return;
+  entwLoeschen();toast("Entwurf verworfen")};
 $("#camBtn").onclick=function(){$("#cam").click()};
 $("#galBtn").onclick=function(){$("#gal").click()};
 $("#cam").onchange=function(e){
@@ -930,7 +1147,7 @@ function drawJobs(){
   }).catch(function(){})}
 }
 function drawList(){
-  head();sichHinweis();
+  head();sichHinweis();grossHinweis();entwZeichnen();
   var m=P.meta;
   $("#metaBox").innerHTML='<div><b>'+esc(m.kundeName||"– Kunde noch nicht erfasst –")+'</b>'+
     (m.kundeKontakt?' · '+esc(m.kundeKontakt):'')+'</div>'+
@@ -992,8 +1209,18 @@ function protokoll(p){
     "geht über Weg 1 «Teilen» direkt nach Drive oder als Mail-Anhang an Gmail.");
   return L.join("\n");
 }
-function dateiAblegen(p){
-  var name=nameOf(p),blob=new Blob([JSON.stringify(p)],{type:"application/json"});
+/* ohneFotos = Notweg für sehr grosse Begehungen: der Bericht geht als kleine Datei
+   raus, die Fotos separat über «Fotos sichern». Das PC-Tool ordnet sie über die
+   Dateinamen wieder dem richtigen Mangel zu. */
+function ohneBilder(p){
+  var k=JSON.parse(JSON.stringify(p));k.fotosSeparat=1;
+  (k.maengel||[]).forEach(function(m,i){
+    m.fotoAnzahl=(m.fotos||[]).length;m.fotoNr=i+1;m.fotos=[]});
+  return k}
+function dateiAblegen(p,ohne){
+  var name=nameOf(p);
+  if(ohne){p=ohneBilder(p);name=name.replace(/\.4hb$/i,"_ohne-Fotos.4hb")}
+  var blob=new Blob([JSON.stringify(p)],{type:"application/json"});
   var u=URL.createObjectURL(blob),a=document.createElement("a");
   a.href=u;a.setAttribute("download",name);a.rel="noopener";a.style.display="none";
   document.body.appendChild(a);a.click();
@@ -1106,7 +1333,10 @@ function sichZeichnen(){
   if(!SICH)return;
   var p=SICH.p,id=SICH.id,b=bkGet(id);
   $("#sichInfo").innerHTML="<b>"+esc(p.meta.kundeName||"Ohne Kunde")+"</b> · "+p.maengel.length+
-    " Mängel · "+fotoZahl(p)+" Fotos<br>Bitte <b>Weg 1</b> erledigen und mindestens einen weiteren. Ein Rundgang lässt sich nicht wiederholen.";
+    " Mängel · "+fotoZahl(p)+" Fotos · ca. "+mb(dateiBytes(p))+
+    "<br>Bitte <b>Weg 1</b> erledigen und mindestens einen weiteren. Ein Rundgang lässt sich nicht wiederholen."+
+    (dateiBytes(p)>mailGrenze()?"<br><b>Hinweis:</b> Die Fotos werden beim Versand automatisch "+
+      "verkleinert, damit die E-Mail durchgeht.":"");
   [["teilen","stTeilen"],["datei","stDatei"],["mail","stMail"],["fotos","stFotos"],["lesbar","stLesbar"]].forEach(function(w){
     var el=$("#"+w[1]),box=document.querySelector('.sichw[data-w="'+w[0]+'"]');
     var frueher=box.querySelector(".bkinfo");if(frueher)frueher.remove();
@@ -1265,15 +1495,36 @@ function rohAblegen(file,nr){
 $("#sichClose").onclick=function(){$("#ovSich").hidden=true;SICH=null};
 $("#ovSich").onclick=function(e){if(e.target===$("#ovSich")){$("#ovSich").hidden=true;SICH=null}};
 $("#sichTeilen").onclick=function(){if(SICH)wegTeilen(SICH.p)};
-$("#sichVersand").onclick=function(){
+$("#sichVersand").onclick=async function(){
   if(!SICH)return;
   var adr=($("#sichMailAdr").value||"").trim()||"info@4-hands.ch";
   $("#sichMailAdr").value=adr;LS.set("fh_backupmail",adr);
-  var n=dateiAblegen(SICH.p);
+
+  /* Erst rechnen, dann senden: eine zu grosse Mail scheitert beim Kunden vor Ort,
+     ohne dass jemand sieht warum. Also vorher automatisch verdichten. */
+  var v=await verdichten(SICH.p), ohneFotos=false;
+  if(v.noetig){
+    if(v.passt){
+      alert("Die Datei war mit "+mb(v.vorher)+" zu gross f\u00fcr eine E-Mail.\n\n"+
+            "Die Fotos wurden daf\u00fcr automatisch verkleinert \u2013 jetzt "+mb(v.nachher)+". "+
+            "Sie bleiben gut lesbar; die Originale in voller Aufl\u00f6sung sind in der Galerie "+
+            "des Handys.");
+    }else{
+      ohneFotos=confirm("Diese Begehung ist auch nach dem Verkleinern noch "+mb(v.nachher)+
+            " gross \u2013 daf\u00fcr ist eine E-Mail zu klein.\n\n"+
+            "OK = Bericht ohne Fotos senden (kleine Datei) und die Fotos anschliessend \u00fcber "+
+            "\u00abFotos sichern\u00bb separat schicken. Das B\u00fcro setzt beides automatisch wieder "+
+            "zusammen.\n\n"+
+            "Abbrechen = trotzdem die ganze Datei ablegen und selbst weitergeben.");
+    }
+  }
+  var n=dateiAblegen(SICH.p,ohneFotos);
   bkSet(SICH.id,"datei",n);
   toast("Abgelegt: "+n);
   setTimeout(function(){
     alert("Schritt 1 von 2 \u2013 die Datei liegt im Ordner Download:\n\n"+n+
+          (ohneFotos?"\n\n(Bericht ohne Fotos \u2013 bitte danach noch \u00abFotos sichern\u00bb ausf\u00fchren "+
+                     "und die Bilder in einer zweiten Mail schicken.)":"")+
           "\n\nJetzt \u00f6ffnet sich die E-Mail. Dort auf die B\u00fcroklammer tippen, "+
           "unter Download diese Datei ausw\u00e4hlen und abschicken.");
     var p=SICH.p;
@@ -1281,6 +1532,9 @@ $("#sichVersand").onclick=function(){
                 " ("+p.maengel.length+" M\u00e4ngel)";
     var text="Anbei die Begehung als Datei:\n\n"+n+"\n\n"+
              "Sie liegt im Ordner Download dieses Handys. Bitte anh\u00e4ngen.\n\n"+
+             (ohneFotos?"ACHTUNG: Diese Datei enth\u00e4lt nur die Texte. Die Fotos kommen wegen "+
+                        "der Gr\u00f6sse in einer zweiten Mail und werden im PC-Tool \u00fcber die "+
+                        "Dateinamen automatisch wieder zugeordnet.\n\n":"")+
              "Kunde: "+(p.meta.kundeName||"\u2014")+"\n"+
              "Objekt: "+(p.meta.objektName||"\u2014")+"\n"+
              "Begehung: "+de(p.meta.begehung)+"\n"+
@@ -1296,6 +1550,15 @@ $("#sichVersand").onclick=function(){
       }
     },1800);
   },400);
+};
+$("#sichOhne").onclick=function(){
+  if(!SICH)return;
+  var n=dateiAblegen(SICH.p,true);
+  bkSet(SICH.id,"datei",n+" (ohne Fotos)");
+  alert("Abgelegt im Ordner Download:\n\n"+n+"\n\nDiese Datei enthält nur die Texte. "+
+        "Bitte anschliessend über «3 · Fotos sichern» auch die Bilder schicken – "+
+        "das PC-Tool ordnet sie automatisch wieder dem richtigen Mangel zu.");
+  sichZeichnen();
 };
 $("#sichFotos").onclick=function(){if(SICH)wegFotos(SICH.p)};
 $("#sichMail").onclick=function(){if(SICH)wegMail(SICH.p)};
@@ -1329,15 +1592,17 @@ async function sendJob(id){
 $("#fabSend").onclick=function(){flush().then(function(){sichOeffnen(P,AID)})};
 $("#alarmSich").onclick=function(){flush().then(function(){sichOeffnen(P,AID)})};
 
-document.addEventListener("visibilitychange",function(){if(document.hidden){clearTimeout(sv);flush()}});
-window.addEventListener("pagehide",function(){clearTimeout(sv);flush()});
+document.addEventListener("visibilitychange",function(){if(document.hidden){entwSchreiben();clearTimeout(sv);flush()}});
+window.addEventListener("pagehide",function(){entwSchreiben();clearTimeout(sv);flush()});
+histWaechter();
 init();
 })();
 </script>
+
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js').catch(function () {});
+if("serviceWorker" in navigator){
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
   });
 }
 </script>
