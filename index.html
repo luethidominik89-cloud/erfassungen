@@ -84,6 +84,10 @@ textarea{min-height:96px;resize:vertical}
   font-size:12.5px;line-height:1.5;margin-bottom:9px}
 .mini{font-size:12px;color:var(--ink3);padding:0 2px 8px}
 .bkinfo{margin-top:7px;font-size:12.5px;color:#1f8a4c;background:#eef7f0;border-radius:6px;padding:6px 9px;word-break:break-all}
+.empfchk{display:flex;gap:9px;align-items:flex-start;margin:9px 0 3px;font-size:13px;color:#3d4650;
+  background:#eef3f9;border:1px solid #cfdcec;border-radius:8px;padding:9px 11px}
+.empfchk input{width:19px;height:19px;margin-top:1px;accent-color:#3d6ea5;flex:none}
+.tag.t-empf{background:#3d6ea5;color:#fff}
 .mini2{font-size:12.5px;line-height:1.5;color:#5b6470;background:#eef2f7;border-radius:7px;padding:8px 10px;margin:7px 0 0}
 .sug{display:flex;gap:7px;flex-wrap:wrap;margin:-4px 0 10px}
 .sug button{border:1px dashed #cfd6de;background:#fbfcfd;color:var(--ink2);padding:8px 12px;border-radius:20px;
@@ -261,6 +265,8 @@ textarea{min-height:96px;resize:vertical}
       <div class="pick" id="pkPrio">
         <button data-p="dringend">Dringend</button><button data-p="mittel" class="on">Mittel</button><button data-p="leicht">Leicht</button>
       </div>
+      <label class="empfchk"><input type="checkbox" id="e_empf">
+        <span><b>Empfehlung</b> &ndash; nicht zwingend vorgeschrieben, aber sinnvoll</span></label>
       <div class="row" style="margin-top:6px">
         <button class="btn p" id="edSave" style="flex:1">Speichern</button>
         <button class="btn dgr" id="edDel" hidden>Löschen</button>
@@ -728,11 +734,14 @@ function openEdit(id){
   $("#e_kat").value=edit?edit.kategorie||"":"";
   $("#e_fest").value=edit?edit.feststellung||"":"";
   var pr=edit?edit.prio||"mittel":"mittel";
+  $("#e_empf").checked=!!(edit&&edit.empf);
   $$("#pkPrio button").forEach(function(b){b.classList.toggle("on",b.dataset.p===pr)});
   if(edit){last.geb=edit.gebaeude;last.sto=edit.stockwerk}
   if(!last.geb)last.geb=P.gebaeude[0]||"";
   chips("#pkGeb",P.gebaeude,last.geb,"geb");
-  chips("#pkSto",P.stockwerke,last.sto,"sto");
+  var stoL=P.stockwerke.indexOf("Stockwerkübergreifend")>=0?P.stockwerke
+      :P.stockwerke.concat(["Stockwerkübergreifend"]);
+  chips("#pkSto",stoL,last.sto,"sto");
   $("#dikLive").textContent="";$("#dikInfo").hidden=true;
   if(vorOrt){$("#e_ort").value=vorOrt;vorOrt=""}
   sugOrt();sugTyp();
@@ -860,7 +869,7 @@ function edSpeichern(weiter){
   var ort=$("#e_ort").value.trim();
   var o={id:edit?edit.id:uid(),gebaeude:last.geb||"",stockwerk:last.sto||"",ort:ort,
     titel:t||"Mangel",kategorie:$("#e_kat").value,feststellung:$("#e_fest").value.trim(),
-    normen:[],massnahme:"",prio:pr,frist:"",verantwortlich:"",fotos:fotos};
+    normen:[],massnahme:"",prio:pr,frist:"",verantwortlich:"",fotos:fotos,empf:$("#e_empf").checked};
   if(edit){P.maengel[P.maengel.indexOf(edit)]=o}else{P.maengel.push(o)}
   if(t)typMerken(t);
   dikStop();save();flush().then(drawJobs);drawList();
@@ -918,7 +927,8 @@ function drawList(){
       (x.fotos&&x.fotos.length?'<img src="'+x.fotos[0].data+'">':'')+
       '<div style="flex:1;min-width:0"><div class="tt">'+esc(x.titel)+'</div>'+
       '<div class="lo">'+esc([x.gebaeude,x.stockwerk,x.ort].filter(Boolean).join(" · "))+'</div></div>'+
-      '<span class="tag t-'+x.prio+'">'+({dringend:"Dringend",mittel:"Mittel",leicht:"Leicht"}[x.prio]||x.prio)+'</span></div>'
+      (x.empf?'<span class="tag t-empf">Empfehlung</span>'
+        :'<span class="tag t-'+x.prio+'">'+({dringend:"Dringend",mittel:"Mittel",leicht:"Leicht"}[x.prio]||x.prio)+'</span>')+'</div>'
   }).join(""):'<div class="empty"><span class="big">📷</span>Noch nichts erfasst.<br>Unten auf «+ Mangel erfassen» tippen.</div>';
   $$("[data-e]").forEach(function(b){b.onclick=function(){openEdit(b.dataset.e)}})}
 
@@ -950,7 +960,7 @@ function protokoll(p){
   if(p.meta.anlass)L.push("","Anlass: "+p.meta.anlass);
   L.push("","────────────────────────────");
   p.maengel.forEach(function(m,i){
-    L.push("",(i+1)+". "+(m.titel||"Mangel")+"   ["+(m.prio||"mittel").toUpperCase()+"]",
+    L.push("",(i+1)+". "+(m.titel||"Mangel")+"   ["+(m.empf?"EMPFEHLUNG":(m.prio||"mittel").toUpperCase())+"]",
       "   Ort: "+[m.gebaeude,m.stockwerk,m.ort].filter(Boolean).join(" · "),
       "   Kategorie: "+(m.kategorie||"—"),
       "   Feststellung: "+(m.feststellung||"—"),
